@@ -1,3 +1,4 @@
+//@ts-check 
 const { test, expect } = require("@playwright/test");
 require("../pages/basePage");
 require("../pages/commonHooks");
@@ -6,6 +7,7 @@ const LoginPage = require("../pages/LoginPage");
 const PIMPage = require("../pages/DashBoard/pim/empInfoPage");
 const AddEmployeePage = require("../pages/DashBoard/pim/addEmployeePage");
 
+ 
 test("Add Employee", async ({ page }) => {
   const loginPage = new LoginPage(page);
   //const dashboardPage = new Dashboard(page);
@@ -16,5 +18,6 @@ test("Add Employee", async ({ page }) => {
   await pimPage.navigateToAddEmployee();
   await addEmployeePage.addEmployee("Test", "Playwright");
   await loginPage.navigateTo("PIM");
-  await pimPage.deleteEmployee("Test", "Playwright");
+  await pimPage.searchEmployee("Test", "Playwright");
+  await pimPage.deleteEmployee();
 });
