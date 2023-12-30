@@ -6,3 +6,8 @@ test.beforeEach(async ({ page }) => {
     "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"
   );
 });
+
+
+test.afterEach(async ({ page }) => {
+ await page.close();
+});
