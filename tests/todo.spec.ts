@@ -1,36 +1,38 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-const TODO_APP_URL = 'https://demo.playwright.dev/todomvc/#/';
-const todoInput = () => test.page.locator('role=textbox[name="What needs to be done?"]');
-const todoItems = (page: Parameters<typeof test.page>[0]) => page.locator('role=listitem');
+//const TODO_APP_URL = 'https://demo.playwright.dev/todomvc/#/';
 
-async function addTodo(page, text: string) {
+const todoItems = (page: Page) => page.locator('.todo-list li');
+
+async function addTodo(page: Page, text: string) {
   await page.getByRole('textbox', { name: 'What needs to be done?' }).fill(text);
   await page.getByRole('textbox', { name: 'What needs to be done?' }).press('Enter');
 }
 
-async function toggleTodo(page, text: string) {
-  await page.getByRole('listitem').filter({ hasText: text }).getByLabel('Toggle Todo').check();
+async function toggleTodo(page: Page, text: string) {
+  await todoItems(page).filter({ hasText: text }).getByLabel('Toggle Todo').check();
 }
 
-async function assertVisibleTodoItems(page, expectedTexts: string[]) {
+async function assertVisibleTodoItems(page: Page, expectedTexts: string[]) {
   await expect(todoItems(page)).toHaveCount(expectedTexts.length);
   for (const text of expectedTexts) {
-    await expect(page.getByRole('listitem').filter({ hasText: text })).toBeVisible();
+    await expect(todoItems(page).filter({ hasText: text })).toBeVisible();
   }
 }
 
-async function clickFilter(page, name: string) {
+async function clickFilter(page: Page, name: string) {
   await page.getByRole('link', { name }).click();
 }
 
-async function clearCompleted(page) {
+async function clearCompleted(page: Page) {
   await page.getByRole('button', { name: 'Clear completed' }).click();
 }
 
 test.describe('TodoMVC basic operations', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(TODO_APP_URL);
+    await page.goto('todomvc/#/');
+    await page.evaluate(() => window.localStorage.clear());
+    await page.reload();
   });
 
   test('should add new todos', async ({ page }) => {
@@ -68,6 +70,6 @@ test.describe('TodoMVC basic operations', () => {
     await clickFilter(page, 'All');
     await assertVisibleTodoItems(page, ['Buy groceries']);
     await expect(page.locator('css=.todo-count')).toContainText('1');
-    await expect(page.getByRole('listitem').filter({ hasText: 'Read book' })).toHaveCount(0);
+    await expect(todoItems(page).filter({ hasText: 'Read book' })).toHaveCount(0);
   });
 });

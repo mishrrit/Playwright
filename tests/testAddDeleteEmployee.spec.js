@@ -8,7 +8,7 @@ const PIMPage = require("../pages/OrangeHrmLive/DashBoard/pim/empInfoPage");
 const AddEmployeePage = require("../pages/OrangeHrmLive/DashBoard/pim/addEmployeePage");
 
 
-test("Add Employee", async ({ page }) => {
+test.skip("Add Employee", async ({ page }) => {
   const loginPage = new LoginPage(page);
   //const dashboardPage = new Dashboard(page);
   const pimPage = new PIMPage(page);

@@ -22,10 +22,41 @@ module.exports = defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
+  /*Glob pattern or regular expression to ignore test files. See https://playwright.dev/docs/test-configuration#testignore */
+  testignore: ['**/tests/e2e/ignore/**'],
+  /*Glob pattern or regular expression to match test files. See https://playwright.dev/docs/test-configuration#testmatch */
+  testMatch: '*.spec.ts',
+  // Folder for test artifacts such as screenshots, videos, traces, etc.
+  outputDir: 'test-results',
+
+  // path to the global setup files.
+  //globalSetup: require.resolve('./global-setup'),
+
+  // path to the global teardown files.
+  //globalTeardown: require.resolve('./global-teardown'),
+
+  // Each test is given 30 seconds.
+  timeout: 30000,
+
+  expect: {
+    // Maximum time expect() should wait for the condition to be met.
+    timeout: 5000,
+
+    toHaveScreenshot: {
+      // An acceptable amount of pixels that could be different, unset by default.
+      maxDiffPixels: 10,
+    },
+
+    toMatchSnapshot: {
+      // An acceptable ratio of pixels that are different to the
+      // total amount of pixels, between 0 and 1.
+      maxDiffPixelRatio: 0.1,
+    },
+  },
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     //   /* Base URL to use in actions like `await page.goto('/')`. */
-    //   baseURL: 'http://127.0.0.1:3000',
+    baseURL: 'https://demo.playwright.dev/',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry', // record traces on first retry of each test
