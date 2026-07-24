@@ -10,6 +10,7 @@ test('test', async ({ page }) => {
     await page.getByRole('textbox', { name: 'What needs to be done?' }).fill('reverse ');
     await page.getByRole('textbox', { name: 'What needs to be done?' }).press('Enter');
     await page.getByRole('listitem').filter({ hasText: 'pt1 class' }).getByLabel('Toggle Todo').check();
+    await page.getByRole('listitem').filter({ hasText: 'pt1 class' }).getByLabel('Toggle Todo').check();
     await page.getByRole('listitem').filter({ hasText: 'revesion' }).getByLabel('Toggle Todo').check();
     await page.getByRole('listitem').filter({ hasText: 'reverse' }).getByLabel('Toggle Todo').check();
     await page.getByRole('link', { name: 'Completed' }).click();

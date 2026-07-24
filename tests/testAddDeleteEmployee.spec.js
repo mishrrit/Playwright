@@ -18,6 +18,4 @@ test("Add Employee", async ({ page }) => {
   await pimPage.navigateToAddEmployee();
   await addEmployeePage.addEmployee("Test", "Playwright");
   await loginPage.navigateTo("PIM");
-  //await pimPage.searchEmployee("Test", "Playwright");
-  //await pimPage.deleteEmployee();
 });
