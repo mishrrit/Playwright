@@ -13,12 +13,14 @@ test.describe('test for elements', async () => {
     test('Record primary (blue) button click and press ok in alert popup', async ({ page }) => {
         await page.goto('http://uitestingplayground.com/');
         await page.getByRole('link', { name: 'Class Attribute' }).click();
-        await page.locator('button.btn-primary').click();
-        //await expect(page.getByRole('dialog', { name: 'Primary button pressed' })).toBeVisible();
+
         page.on('dialog', async dialog => {
-            console.log(`Dialog message: ${dialog.message()}`);
+            expect(dialog.message()).toBe('Primary button pressed');
+            await page.waitForTimeout(1000);
             await dialog.accept();
         });
 
-    })
+        await page.locator('button.btn-primary').click({ timeout: 15000 });
+        await page.waitForTimeout(1000);
+    });
 });
