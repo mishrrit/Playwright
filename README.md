@@ -1,23 +1,74 @@
-# Playwright
-This is a simple Playwright framework for any webapp.
+# Playwright Test Framework
 
-# Pre-Requisite
-Playwright installed on the machine. This could be done in a very simple way using npm
-npm init playwright@latest
+This workspace contains a Playwright-based end-to-end testing setup for web applications. The current configuration uses TypeScript test specs, multi-browser execution, and HTML reporting.
 
-# Plugins - good to have with VS Code
- Playwright Test for VS Code
+## What’s included
 
-# How to run the code
-Playwright tests could be executed in multiple ways
-1. Using VS Code terminal
-    npx playwright test <<test name>>
+- Playwright Test runner with TypeScript support
+- Browser projects for Chromium and Firefox
+- HTML report generation and test artifacts in the output folder
+- A base URL configured for the demo Playwright site
 
-2. Using the VS Code -Test Explorer
-   When the project automatically detects test from the playwright, it automatically displays the tests in the Test Explorer.
-   Test case with suffix as *.spec.js
+## Prerequisites
 
+- Node.js 18 or newer
+- npm
 
-# Reference
-https://playwright.dev/docs/intro
+## Setup
 
+Install the project dependencies:
+
+```bash
+npm install
+```
+
+Install the browser binaries required by Playwright:
+
+```bash
+npx playwright install
+```
+
+Optional but recommended: install the VS Code extension "Playwright Test for VS Code".
+
+## Running tests
+
+Run all tests:
+
+```bash
+npx playwright test
+```
+
+Run a specific spec:
+
+```bash
+npx playwright test tests/todo.spec.ts
+```
+
+Run a specific browser project:
+
+```bash
+npx playwright test --project=chromium
+```
+
+Open the HTML report after a run:
+
+```bash
+npx playwright show-report
+```
+
+## Project structure
+
+- [playwright.config.js](playwright.config.js) – main Playwright configuration
+- [tests](tests) – test specifications
+- [test-results](test-results) – generated screenshots, traces, and other artifacts
+- [playwright-report](playwright-report) – generated HTML report
+
+## Notes
+
+- Test files follow the `*.spec.ts` pattern.
+- The default test timeout is 30 seconds and the assertion timeout is 5 seconds.
+- CI-specific retry and worker settings are already configured in the Playwright config.
+
+## Reference
+
+- https://playwright.dev/docs/intro
