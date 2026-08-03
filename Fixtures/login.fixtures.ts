@@ -1,4 +1,4 @@
-import { test as baseTest } from '@playwright/test';
+import { test as baseTest, Page } from '@playwright/test';
 
 
 type LoginFixture = {
