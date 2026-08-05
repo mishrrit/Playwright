@@ -18,9 +18,9 @@ export const test = baseTest.extend<LoginFixture>({
         // Wait for navigation after login
         await page.waitForNavigation();
         // Use the logged-in page in tests
-        await use(page);
+        //await use(page);
     }
 });
 
-export { loginFixture };
+export { LoginFixture };
 
