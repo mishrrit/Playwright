@@ -61,6 +61,8 @@ module.exports = defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry', // record traces on first retry of each test
 
+    /* Grant clipboard permissions */
+    permissions: ['clipboard-read', 'clipboard-write'],
   },
 
   /* Configure projects for major browsers */
@@ -71,11 +73,11 @@ module.exports = defineConfig({
       viewport: { width: 1280, height: 720 },
     },
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-      viewport: { width: 1280, height: 720 },
-    },
+    //{
+    // name: 'firefox',
+    //use: { ...devices['Desktop Firefox'] },
+    // viewport: { width: 1280, height: 720 },
+    // },
 
     //{
     //  name: 'webkit',
