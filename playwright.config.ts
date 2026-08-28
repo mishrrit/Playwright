@@ -10,32 +10,14 @@ import { defineConfig, devices } from "@playwright/test";
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  /* Look for test files in the "tests" directory, relative to this configuration file. */
   testDir: "./tests",
-  /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
-  /*Glob pattern or regular expression to ignore test files. See https://playwright.dev/docs/test-configuration#testignore */
-  testIgnore: ["**/tests/e2e/ignore/**"],
-  /*Glob pattern or regular expression to match test files. See https://playwright.dev/docs/test-configuration#testmatch */
-  testMatch: "*.spec.ts",
-  // Folder for test artifacts such as screenshots, videos, traces, etc.
+  testMatch: ["**/*.spec.ts", "**/*.spec.js"],
   outputDir: "test-results",
-
-  // path to the global setup files.
-  //globalSetup: require.resolve('./global-setup'),
-
-  // path to the global teardown files.
-  //globalTeardown: require.resolve('./global-teardown'),
-
-  // Each test is given 30 seconds.
   timeout: 30000,
 
   expect: {
@@ -53,63 +35,55 @@ export default defineConfig({
       maxDiffPixelRatio: 0.1,
     },
   },
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    //   /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "https://demo.playwright.dev/",
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "on-first-retry", // record traces on first retry of each test
+    trace: "on-first-retry",
   },
 
-  /* Configure projects for major browsers */
   projects: [
     {
-      name: "chromium",
+      name: "todo-mvc-chromium",
+      testMatch: "**/tests/todo-mvc/**/*.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
+        baseURL: "https://demo.playwright.dev/",
         viewport: { width: 1280, height: 720 },
       },
     },
-
     {
-      name: "firefox",
+      name: "todo-mvc-firefox",
+      testMatch: "**/tests/todo-mvc/**/*.spec.ts",
       use: {
         ...devices["Desktop Firefox"],
+        baseURL: "https://demo.playwright.dev/",
         viewport: { width: 1280, height: 720 },
       },
     },
-
-    //{
-    //  name: 'webkit',
-    //  use: { ...devices['Desktop Safari'] },
-    //},
-
-    /* Test against mobile view ports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    {
+      name: "ui-testing-playground-chromium",
+      testMatch: "**/tests/ui-testing-playground/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "http://uitestingplayground.com/",
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: "ui-testing-playground-firefox",
+      testMatch: "**/tests/ui-testing-playground/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Firefox"],
+        baseURL: "http://uitestingplayground.com/",
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: "orange-hrm-chromium",
+      testMatch: "**/tests/orange-hrm/**/*.spec.js",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+        viewport: { width: 1280, height: 720 },
+      },
+    },
   ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });

@@ -58,16 +58,20 @@ npx playwright show-report
 
 ## Project structure
 
-- [playwright.config.js](playwright.config.js) – main Playwright configuration
+- [playwright.config.ts](playwright.config.ts) – main Playwright configuration
 - [tests](tests) – test specifications
+- [pages](pages) – page objects grouped by application
+- [tests/fixtures](tests/fixtures) – custom Playwright fixtures
+- [test-plans](test-plans) – test plans and exploratory documentation
 - [test-results](test-results) – generated screenshots, traces, and other artifacts
 - [playwright-report](playwright-report) – generated HTML report
 
 ## Notes
 
-- Test files follow the `*.spec.ts` pattern.
+- Test files follow the `*.spec.ts` or `*.spec.js` pattern.
 - The default test timeout is 30 seconds and the assertion timeout is 5 seconds.
-- CI-specific retry and worker settings are already configured in the Playwright config.
+- Suite-specific projects define the application base URL and browser coverage.
+- CI runs all configured projects and uploads the HTML report.
 
 ## Reference
 
