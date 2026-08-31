@@ -42,3 +42,12 @@ playwright.env
 /firefox/
 .playwright/
 .npmrc
+.mjs
+.js
+.html
+
+# Playwright
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

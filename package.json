@@ -1,7 +1,19 @@
 {
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
-    "@types/node": "^26.1.1",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0",
     "typescript": "^7.0.2"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "test:todo-mvc": "playwright test tests/todo-mvc",
+    "test:ui-testing-playground": "playwright test tests/ui-testing-playground",
+    "test:orange-hrm": "playwright test tests/orange-hrm"
+  },
+  "dependencies": {
+    "playwright": "^1.62.1"
   }
 }
