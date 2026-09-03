@@ -1,0 +1,17 @@
+{
+  "positiveLogin": {
+    "username": "student",
+    "password": "Password123",
+    "successUrlPattern": "practicetestautomation.com/logged-in-successfully/"
+  },
+  "invalidUsername": {
+    "username": "incorrectUser",
+    "password": "Password123",
+    "errorMessage": "Your username is invalid!"
+  },
+  "invalidPassword": {
+    "username": "student",
+    "password": "incorrectPassword",
+    "errorMessage": "Your password is invalid!"
+  }
+}

@@ -81,7 +81,17 @@ export default defineConfig({
       testMatch: "**/tests/orange-hrm/**/*.spec.js",
       use: {
         ...devices["Desktop Chrome"],
-        baseURL: "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+        baseURL:
+          "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: "practice-test-automation-chromium",
+      testMatch: "**/tests/practice-test-automation/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "https://practicetestautomation.com/practice-test-login/",
         viewport: { width: 1280, height: 720 },
       },
     },
