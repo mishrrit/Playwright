@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@playwright/cli": "^0.1.19",
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.2.0",
     "typescript": "^7.0.2"
@@ -11,7 +12,9 @@
     "test:report": "playwright show-report",
     "test:todo-mvc": "playwright test tests/todo-mvc",
     "test:ui-testing-playground": "playwright test tests/ui-testing-playground",
-    "test:orange-hrm": "playwright test tests/orange-hrm"
+    "test:orange-hrm": "playwright test tests/orange-hrm",
+    "test:saucedemo": "playwright test tests/saucedemo",
+    "test:saucedemo:update-snapshots": "playwright test tests/saucedemo --update-snapshots"
   },
   "dependencies": {
     "playwright": "^1.62.1"

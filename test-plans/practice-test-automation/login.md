@@ -48,3 +48,4 @@ Shared test data is stored in `test-data/practice-test-automation/login.json` an
 - Verify an error message is displayed.
 - Verify the error message is `Your password is invalid!`.
 - Verify the user remains on the login page.
+

@@ -17,3 +17,5 @@ node index.js
 
 When run in CI (GitHub Actions) the script will commit and push any fixes it applies.
 
+Repository markdownlint rules are defined at `.markdownlint.json` in the repo root. See `markdownlint-exceptions.md` for the list of disabled rules and rationale.
+

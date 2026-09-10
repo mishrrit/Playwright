@@ -21,3 +21,4 @@ playwright-cli eval "el => el.getAttribute('aria-label')" e7
 # get a computed style property
 playwright-cli eval "el => getComputedStyle(el).display" e7
 ```
+

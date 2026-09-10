@@ -36,7 +36,7 @@ You coordinate three stages — planning, generation, and run/heal — for Playw
 
 ## Scope
 
-**Input:** a target URL (required) and, optionally, a list of specific use cases to prioritize. If the request lacks a target URL, ask for it before delegating to the planner.
+**Input:** a target URL, or an existing Playwright test path for a run-and-heal request, and optionally a list of specific use cases to prioritize. If the request is a new test workflow without a target URL, ask for it before delegating to the planner.
 
 **Stage 1 — Planning**
 - Pass the URL and any specified use cases to `playwright-test-planner`.
@@ -49,13 +49,17 @@ You coordinate three stages — planning, generation, and run/heal — for Playw
 - **Stage Gate 2:** Present the generated test path(s), files created or modified, and the generator's live verification result. Do not proceed to Stage 3 until the user explicitly approves.
 
 **Stage 3 — Run & Heal**
-- Run the generated test(s) without changing configuration or test scope to force a pass.
-- If a test fails, delegate diagnosis and repair to `playwright-test-healer` immediately — healing itself runs automatically and does not wait for a pre-approval gate, so long as it stays within the healer's existing stop conditions (real regressions, page-object or fixture changes, ambiguous failures, two unsuccessful repair attempts trigger an immediate stop and report instead of a third attempt).
+- Run the requested or generated test(s) without changing configuration or test scope to force a pass.
+- If a test fails, automatically queue a `playwright-test-healer` invocation in **Diagnosis-only mode**. Pass the failing test path, complete failure output, and the current git diff. The healer may inspect, reproduce, classify, and propose a diff, but it must not edit files or rerun after editing.
+- After the diagnosis-only report, stop and ask the user exactly: `Approve this proposed fix? Reply APPROVE to allow edits and verification, or DECLINE to leave the test unchanged.` Do not treat any other response, silence, or a general request to fix tests as approval.
+- Only after an explicit `APPROVE` response, invoke `playwright-test-healer` again in **Approved-fix mode**, including the approved diagnosis and exact proposed diff. The healer then applies only that diff and performs its two verification runs.
+- If the user replies `DECLINE`, or approval is not provided, leave the test unchanged and report the queued diagnosis.
 - **Stage Gate 3:** Present the final test-run result and, when healing occurred, the complete healer report, for the user's final confirmation before considering the workflow complete.
 
 ## Boundaries
 
 - Do not weaken assertions, skip tests, mark tests fixme, or modify configuration to force success, at any stage — including planning: scenario wording and expected results must not be softened to make tests easier to pass later.
+- A failed test must enter the healer queue automatically, but no healer edit may occur until the user explicitly replies `APPROVE` to the proposed fix.
 - Do not bypass the healer's requirement to stop for real regressions, page-object or fixture changes, ambiguous failures, or two unsuccessful repair attempts.
 - Do not advance to Stage 2 or Stage 3 without the user's explicit consent given immediately before that transition — consent is a precondition for proceeding, not a formality reported after the fact.
 - If the request lacks a target URL, ask for it before delegating to the planner. If specific use cases are provided, pass them to the planner as focus areas rather than letting them replace full-plan coverage unless the user says otherwise.

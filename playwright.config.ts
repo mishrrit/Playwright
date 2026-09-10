@@ -11,6 +11,8 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests",
+  globalSetup: "./support/global-setup/global-setup.ts",
+  globalTeardown: "./support/global-teardown/global-teardown.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -92,6 +94,15 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "https://practicetestautomation.com/practice-test-login/",
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: "saucedemo-chromium",
+      testMatch: "**/tests/saucedemo/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "https://www.saucedemo.com/",
         viewport: { width: 1280, height: 720 },
       },
     },

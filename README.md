@@ -149,9 +149,11 @@ npm run test:report
 │   └── README.md
 ├── test-results/                 # Generated screenshots, traces, artifacts
 ├── playwright-report/            # Generated HTML report
-└── support/                      # Global setup/teardown (currently empty)
-    ├── global-setup/
-    └── global-teardown/
+└── support/                      # Shared test-run lifecycle hooks
+  ├── global-setup/
+  │   └── global-setup.ts
+  └── global-teardown/
+    └── global-teardown.ts
 ```
 
 ## Test Suites Overview
@@ -204,3 +206,8 @@ npm run test:report
 - <https://playwright.dev/docs/intro>
 - <https://playwright.dev/docs/test-configuration>
 - <https://playwright.dev/docs/page-object-models>
+
+## Maintainers / Contact
+
+- Ritesh Mishra
+
