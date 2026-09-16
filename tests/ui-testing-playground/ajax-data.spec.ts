@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { AjaxDataPage } from '../../pages/ui-testing-playground/AjaxDataPage';
 
 test('AJAX Data: Test for text visibility after clicking a button', async ({ page }) => {

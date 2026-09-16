@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { LoadDelayPage } from '../../pages/ui-testing-playground/LoadDelayPage';
 
 test('Load Delay: Test for page loading and element visibility', async ({ page }) => {

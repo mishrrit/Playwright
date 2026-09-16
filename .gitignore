@@ -45,6 +45,10 @@ playwright.env
 .mjs
 .js
 .html
+.patch
+
+#allure-results/
+/allure-results/
 
 # Playwright
 /playwright-report/
@@ -53,3 +57,9 @@ playwright.env
 /playwright/.auth/
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+
+#continue
+/.continue
+
+#healer
+/.healer

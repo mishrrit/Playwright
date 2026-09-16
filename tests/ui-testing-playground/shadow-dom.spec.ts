@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { ShadowDomPage } from '../../pages/ui-testing-playground/ShadowDomPage';
 
 test('Shadow DOM: Test for interacting with elements inside Shadow DOM', async ({ page, context }) => {

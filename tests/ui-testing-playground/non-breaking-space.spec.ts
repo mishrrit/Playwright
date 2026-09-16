@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { NonBreakingSpacePage } from '../../pages/ui-testing-playground/NonBreakingSpacePage';
 
 test('Non-Breaking Space: Test for text visibility with non-breaking spaces', async ({ page }) => {

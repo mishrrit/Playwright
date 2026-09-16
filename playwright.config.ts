@@ -17,7 +17,17 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  reporter: [
+    ["line"],
+    [
+      "allure-playwright",
+      {
+        detail: true,
+        outputFolder: "allure-results",
+        suiteTitle: true,
+      },
+    ],
+  ],
   testMatch: ["**/*.spec.ts", "**/*.spec.js"],
   outputDir: "test-results",
   timeout: 30000,
@@ -103,6 +113,15 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "https://www.saucedemo.com/",
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: "demo-web-shop-chromium",
+      testMatch: "**/tests/demo-web-shop/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "https://demowebshop.tricentis.com/",
         viewport: { width: 1280, height: 720 },
       },
     },

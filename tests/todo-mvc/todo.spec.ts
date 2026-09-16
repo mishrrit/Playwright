@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from "../../support/fixtures/base";
 
 //const TODO_APP_URL = 'https://demo.playwright.dev/todomvc/#/';
 

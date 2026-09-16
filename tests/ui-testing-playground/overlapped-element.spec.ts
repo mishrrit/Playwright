@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { OverlappedElementPage } from '../../pages/ui-testing-playground/OverlappedElementPage';
 
 test('Overlapped Element: Test for clicking an overlapped element', async ({ page }) => {

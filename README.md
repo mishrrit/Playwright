@@ -5,7 +5,7 @@ This workspace contains a Playwright-based end-to-end testing setup for web appl
 ## What's Included
 
 - **Playwright Test runner** with TypeScript and JavaScript support
-- **Multi-browser projects**: Chromium and Firefox for each test suite
+- **Configured browser projects**: Chromium and Firefox where supported by the suite
 - **Page Object Model (POM)** architecture for maintainable tests
 - **Custom fixtures** for authentication and test setup
 - **HTML report generation** with screenshots, traces, and artifacts
@@ -53,6 +53,18 @@ npm run test:ui-testing-playground
 
 # OrangeHRM tests
 npm run test:orange-hrm
+
+# Demo Web Shop tests
+npx playwright test tests/demo-web-shop --project=demo-web-shop-chromium
+
+# Practice Test Automation tests
+npx playwright test tests/practice-test-automation --project=practice-test-automation-chromium
+
+# SauceDemo tests
+npx playwright test tests/saucedemo --project=saucedemo-chromium
+
+# UI Testing Playground Firefox tests
+npx playwright test tests/ui-testing-playground --project=ui-testing-playground-firefox
 ```
 
 ### Run with Options
@@ -70,7 +82,15 @@ npx playwright test --project=orange-hrm-chromium
 
 # Open HTML report after a run
 npm run test:report
+
+# Generate and open an Allure report manually when needed
+npx allure generate allure-results -o allure-report --clean
+npx allure open allure-report
 ```
+
+Every Playwright run automatically clears the previous `allure-results` data and
+generates a fresh report in `allure-report/` during global teardown, including
+single-test and filtered test runs.
 
 ## Project Structure
 
@@ -84,6 +104,9 @@ npm run test:report
 │   ├── orange-hrm/               # OrangeHRM test specs (JavaScript)
 │   │   ├── add-delete-employee.spec.js
 │   │   └── testAddDeleteEmployee.spec.js
+│   ├── demo-web-shop/             # Demo Web Shop specs (TypeScript)
+│   ├── practice-test-automation/  # Practice Test Automation specs (TypeScript)
+│   ├── saucedemo/                 # SauceDemo specs (TypeScript)
 │   ├── todo-mvc/                 # TodoMVC test specs (TypeScript)
 │   │   ├── add-todos.spec.ts
 │   │   ├── annotations.spec.ts
@@ -117,6 +140,11 @@ npm run test:report
 │       ├── visibility-removed.spec.ts
 │       └── visibility-zero-width.spec.ts
 ├── pages/                        # Page Objects (POM)
+│   ├── common/
+│   │   └── BasePage.ts           # Shared typed page foundation
+│   ├── demo-web-shop/             # Demo Web Shop page objects
+│   ├── practice-test-automation/ # Practice Test Automation page objects
+│   ├── saucedemo/                 # SauceDemo page objects
 │   ├── orange-hrm/               # OrangeHRM Page Objects (JavaScript)
 │   │   ├── BasePage.js           # Base page class
 │   │   ├── LoginPage.js          # Login page actions
@@ -144,24 +172,47 @@ npm run test:report
 │       ├── TextInputPage.ts
 │       ├── VerifyTextPage.ts
 │       └── VisibilityPage.ts
+├── support/
+│   ├── fixtures/
+│   │   ├── base.ts               # Shared test and expect exports
+│   │   └── index.ts              # Fixture barrel export
+│   ├── global-setup/
+│   └── global-teardown/
+├── test-data/                    # Feature-specific JSON test data
+│   ├── demo-web-shop/
+│   ├── practice-test-automation/
+│   ├── saucedemo/
+│   └── ui-testing-playground/
 ├── test-plans/                   # Test plans and exploratory documentation
-│   ├── basic-operations.md       # TodoMVC basic operations plan
-│   └── README.md
+├── .playwright-cli/              # Browser snapshots and console logs
+├── allure-results/               # Raw Allure test results
+├── allure-report/                # Generated Allure report
+├── playwright-report/            # Generated Playwright HTML report
 ├── test-results/                 # Generated screenshots, traces, artifacts
-├── playwright-report/            # Generated HTML report
-└── support/                      # Shared test-run lifecycle hooks
-  ├── global-setup/
-  │   └── global-setup.ts
-  └── global-teardown/
-    └── global-teardown.ts
+└── README.md
 ```
+
+## Framework Conventions
+
+- Import `test` and `expect` from `support/fixtures/base.ts` in TypeScript specs.
+- Keep application-specific locators and actions in `pages/<application>/`.
+- Extend `pages/common/BasePage.ts` for shared navigation and page helpers.
+- Keep assertions in test specs; page objects expose locators and actions.
+- Store reusable scenario values in `test-data/<application>/` JSON files.
+- Import JSON data with TypeScript `resolveJsonModule` support; keep secrets out of committed fixtures.
+- Keep each Playwright project’s `baseURL` and test scope in `playwright.config.ts`.
+- Prefer accessible locators and web-first assertions; avoid fixed timeouts.
+- Keep generated snapshots, traces, and reports in their configured output folders.
 
 ## Test Suites Overview
 
 | Suite | Application | Language | Test Files | Browser Projects |
 | ------- | ------------- | ---------- | ------------ | ------------------ |
 | **todo-mvc** | <https://demo.playwright.dev/todomvc> | TypeScript | 5 | Chromium, Firefox |
-| **ui-testing-playground** | <http://uitestingplayground.com> | TypeScript | 21 | Chromium, Firefox |
+| **ui-testing-playground** | <http://uitestingplayground.com> | TypeScript | 25 | Chromium, Firefox |
+| **demo-web-shop** | <https://demowebshop.tricentis.com> | TypeScript | 4 | Chromium |
+| **practice-test-automation** | <https://practicetestautomation.com/practice-test-login/> | TypeScript | 3 | Chromium |
+| **saucedemo** | <https://www.saucedemo.com> | TypeScript | 24 | Chromium |
 | **orange-hrm** | <https://opensource-demo.orangehrmlive.com> | JavaScript | 2 | Chromium |
 
 ### OrangeHRM Test Suite
@@ -173,7 +224,7 @@ npm run test:report
 
 ### UI Testing Playground
 
-- 21 test scenarios covering various UI challenges:
+- 25 test scenarios covering various UI challenges:
   - Dynamic IDs, AJAX data, Client-side delays
   - Hidden layers, Overlapped elements, Shadow DOM
   - Progress bars, Scroll bars, Mouse interactions
@@ -198,7 +249,7 @@ npm run test:report
 
 - Test files follow the `*.spec.ts` (TypeScript) or `*.spec.js` (JavaScript) pattern
 - Suite-specific projects define application base URLs and browser coverage
-- CI runs all configured projects and uploads the HTML report
+- The configured reporters write line output and Allure results; Playwright HTML output is available through the standard report commands
 - Page Objects are organized by application under `pages/`
 
 ## Reference

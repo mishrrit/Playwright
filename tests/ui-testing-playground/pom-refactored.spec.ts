@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { DynamicIdPage } from '../../pages/ui-testing-playground/DynamicIdPage';
 import { ClassAttributePage } from '../../pages/ui-testing-playground/ClassAttributePage';
 import { HiddenLayersPage } from '../../pages/ui-testing-playground/HiddenLayersPage';

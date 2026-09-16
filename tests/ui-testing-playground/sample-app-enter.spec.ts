@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { SampleAppPage } from '../../pages/ui-testing-playground/SampleAppPage';
 
 test('Sample App: Enter username and password', async ({ page }) => {

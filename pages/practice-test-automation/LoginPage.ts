@@ -1,6 +1,7 @@
 import { Page } from "@playwright/test";
+import { BasePage } from "../common/BasePage";
 
-export class LoginPage {
+export class LoginPage extends BasePage {
   readonly heading;
   readonly usernameInput;
   readonly passwordInput;
@@ -9,7 +10,8 @@ export class LoginPage {
   readonly successMessage;
   readonly logoutLink;
 
-  constructor(private readonly page: Page) {
+  constructor(page: Page) {
+    super(page);
     this.heading = page.getByRole("heading", { name: "Test login" });
     this.usernameInput = page.getByRole("textbox", { name: "Username" });
     this.passwordInput = page.getByRole("textbox", { name: "Password" });
@@ -23,7 +25,7 @@ export class LoginPage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(".");
+    await super.goto(".");
   }
 
   async login(username: string, password: string): Promise<void> {

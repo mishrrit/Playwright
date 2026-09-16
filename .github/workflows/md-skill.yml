@@ -1,0 +1,48 @@
+name: MD Skill - fix README
+
+on:
+  push:
+    paths:
+      - '**/README.md'
+      - '**/readme.md'
+  pull_request:
+    paths:
+      - '**/README.md'
+      - '**/readme.md'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run markdownlint fix and normalization
+        shell: bash
+        run: |
+          # Run markdownlint auto-fix (uses npx to fetch the CLI if not present)
+          npx markdownlint-cli --fix "**/*.md" --config ./.markdownlint.json --ignore-path ./.markdownlintignore || true
+
+          # Normalize Markdown files: CRLF -> LF, trim trailing spaces, collapse >2 blank lines to 2, ensure single trailing newline
+          find . -name "*.md" \
+            -not -path "./node_modules/*" \
+            -not -path "./playwright-report/*" \
+            -not -path "./test-results/*" \
+            -print0 | \
+            xargs -0 -n1 perl -0777 -i -pe 's/\r\n/\n/g; s/[ \t]+$//mg; s/\n{3,}/\n\n/g; chomp; $_ .= "\n";'
+
+          # Stage tracked changes and commit if any
+          git add -u
+          git commit -m "chore(md-skill): fix markdown formatting" || true
+          git push || true

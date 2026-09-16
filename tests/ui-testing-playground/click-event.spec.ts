@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { ClickEventPage } from '../../pages/ui-testing-playground/ClickEventPage';
 
 test('Click: Event based click on DOM Event', async ({ page }) => {
