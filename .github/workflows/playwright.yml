@@ -35,8 +35,10 @@ jobs:
         include:
           - name: API
             path: api
+            project: api
           - name: UI
             path: ui
+            project: chromium
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -48,7 +50,7 @@ jobs:
         run: npx playwright install --with-deps
       - name: Run Playwright tests
         run: |
-          npx playwright test ${{ matrix.path }} --reporter=line,allure-playwright
+          npx playwright test ${{ matrix.path }} --project=${{ matrix.project }} --reporter=line,allure-playwright
           # rename the default Playwright report folder to a matrix-specific folder
           if [ -d "playwright-report" ]; then mv playwright-report "playwright-report-${{ matrix.name }}"; fi
       - uses: actions/upload-artifact@v4
