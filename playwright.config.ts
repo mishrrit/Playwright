@@ -10,9 +10,9 @@ import { defineConfig, devices } from "@playwright/test";
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: "./tests",
-  globalSetup: "./support/global-setup/global-setup.ts",
-  globalTeardown: "./support/global-teardown/global-teardown.ts",
+  testDir: "./ui/tests",
+  globalSetup: "./ui/support/global-setup/global-setup.ts",
+  globalTeardown: "./ui/support/global-teardown/global-teardown.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -26,6 +26,10 @@ export default defineConfig({
         outputFolder: "allure-results",
         suiteTitle: true,
       },
+    ],
+    [
+      "./ai/failure-summaries/dist/nl-failure-reporter.js",
+      { outDir: "ai/failure-summaries/raw" },
     ],
   ],
   testMatch: ["**/*.spec.ts", "**/*.spec.js"],
@@ -54,7 +58,7 @@ export default defineConfig({
   projects: [
     {
       name: "todo-mvc-chromium",
-      testMatch: "**/tests/todo-mvc/**/*.spec.ts",
+      testMatch: "**/ui/tests/todo-mvc/**/*.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "https://demo.playwright.dev/",
@@ -63,7 +67,7 @@ export default defineConfig({
     },
     {
       name: "todo-mvc-firefox",
-      testMatch: "**/tests/todo-mvc/**/*.spec.ts",
+      testMatch: "**/ui/tests/todo-mvc/**/*.spec.ts",
       use: {
         ...devices["Desktop Firefox"],
         baseURL: "https://demo.playwright.dev/",
@@ -72,7 +76,7 @@ export default defineConfig({
     },
     {
       name: "ui-testing-playground-chromium",
-      testMatch: "**/tests/ui-testing-playground/**/*.spec.ts",
+      testMatch: "**/ui/tests/ui-testing-playground/**/*.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "http://uitestingplayground.com/",
@@ -81,7 +85,7 @@ export default defineConfig({
     },
     {
       name: "ui-testing-playground-firefox",
-      testMatch: "**/tests/ui-testing-playground/**/*.spec.ts",
+      testMatch: "**/ui/tests/ui-testing-playground/**/*.spec.ts",
       use: {
         ...devices["Desktop Firefox"],
         baseURL: "http://uitestingplayground.com/",
@@ -90,7 +94,7 @@ export default defineConfig({
     },
     {
       name: "orange-hrm-chromium",
-      testMatch: "**/tests/orange-hrm/**/*.spec.js",
+      testMatch: "**/ui/tests/orange-hrm/**/*.spec.js",
       use: {
         ...devices["Desktop Chrome"],
         baseURL:
@@ -100,7 +104,7 @@ export default defineConfig({
     },
     {
       name: "practice-test-automation-chromium",
-      testMatch: "**/tests/practice-test-automation/**/*.spec.ts",
+      testMatch: "**/ui/tests/practice-test-automation/**/*.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "https://practicetestautomation.com/practice-test-login/",
@@ -109,7 +113,7 @@ export default defineConfig({
     },
     {
       name: "saucedemo-chromium",
-      testMatch: "**/tests/saucedemo/**/*.spec.ts",
+      testMatch: "**/ui/tests/saucedemo/**/*.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "https://www.saucedemo.com/",
@@ -118,11 +122,21 @@ export default defineConfig({
     },
     {
       name: "demo-web-shop-chromium",
-      testMatch: "**/tests/demo-web-shop/**/*.spec.ts",
+      testMatch: "**/ui/tests/demo-web-shop/**/*.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: "https://demowebshop.tricentis.com/",
         viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: "api",
+      testMatch: "**/api/**/*.spec.ts",
+      use: {
+        baseURL:
+          process.env.APP_BASE_URL ||
+          process.env.API_BASE_URL ||
+          "http://localhost:3000",
       },
     },
   ],

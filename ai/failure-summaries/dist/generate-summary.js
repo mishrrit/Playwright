@@ -41,7 +41,8 @@ async function main() {
     const scriptPath = process.argv[1] || (typeof __filename !== "undefined" ? __filename : void 0);
     const scriptDir = scriptPath ? path.dirname(scriptPath) : typeof __dirname !== "undefined" ? __dirname : process.cwd();
     const artifactsDir = path.resolve(scriptDir, "..", "artifacts");
-    if (!fs.existsSync(artifactsDir)) fs.mkdirSync(artifactsDir, { recursive: true });
+    if (!fs.existsSync(artifactsDir))
+      fs.mkdirSync(artifactsDir, { recursive: true });
     const base = path.basename(file, path.extname(file));
     const outPath = path.join(artifactsDir, `${base}-nl-summary.txt`);
     fs.writeFileSync(outPath, summary, "utf8");

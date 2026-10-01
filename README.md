@@ -55,16 +55,20 @@ npm run test:ui-testing-playground
 npm run test:orange-hrm
 
 # Demo Web Shop tests
-npx playwright test tests/demo-web-shop --project=demo-web-shop-chromium
+npx playwright test ui/tests/demo-web-shop --project=demo-web-shop-chromium
 
 # Practice Test Automation tests
-npx playwright test tests/practice-test-automation --project=practice-test-automation-chromium
+npx playwright test ui/tests/practice-test-automation --project=practice-test-automation-chromium
 
 # SauceDemo tests
-npx playwright test tests/saucedemo --project=saucedemo-chromium
+npx playwright test ui/tests/saucedemo --project=saucedemo-chromium
 
 # UI Testing Playground Firefox tests
-npx playwright test tests/ui-testing-playground --project=ui-testing-playground-firefox
+npx playwright test ui/tests/ui-testing-playground --project=ui-testing-playground-firefox
+
+# API tests (Playwright request-based API suite)
+# Run only the API folder using the dedicated `api` project
+npx playwright test api --project=api
 ```
 
 ### Run with Options
@@ -98,7 +102,7 @@ single-test and filtered test runs.
 .
 ├── playwright.config.ts          # Main Playwright configuration
 ├── package.json                  # Dependencies and npm scripts
-├── tests/                        # Test specifications
+├── ui/tests/                        # Test specifications
 │   ├── fixtures/                 # Custom Playwright fixtures
 │   │   └── orange-hrm.ts         # OrangeHRM login fixture
 │   ├── orange-hrm/               # OrangeHRM test specs (JavaScript)
@@ -139,7 +143,7 @@ single-test and filtered test runs.
 │       ├── visibility-overlapped.spec.ts
 │       ├── visibility-removed.spec.ts
 │       └── visibility-zero-width.spec.ts
-├── pages/                        # Page Objects (POM)
+├── ui/pages/                        # Page Objects (POM)
 │   ├── common/
 │   │   └── BasePage.ts           # Shared typed page foundation
 │   ├── demo-web-shop/             # Demo Web Shop page objects
@@ -172,13 +176,13 @@ single-test and filtered test runs.
 │       ├── TextInputPage.ts
 │       ├── VerifyTextPage.ts
 │       └── VisibilityPage.ts
-├── support/
+├── ui/support/
 │   ├── fixtures/
 │   │   ├── base.ts               # Shared test and expect exports
 │   │   └── index.ts              # Fixture barrel export
 │   ├── global-setup/
 │   └── global-teardown/
-├── test-data/                    # Feature-specific JSON test data
+├── ui/test-data/                    # Feature-specific JSON test data
 │   ├── demo-web-shop/
 │   ├── practice-test-automation/
 │   ├── saucedemo/
@@ -251,13 +255,47 @@ single-test and filtered test runs.
 - Suite-specific projects define application base URLs and browser coverage
 - The configured reporters write line output and Allure results; Playwright HTML output is available through the standard report commands
 - Page Objects are organized by application under `pages/`
+## Workflow
+
+The diagram below shows the core test-execution and reporting flow used by this repository (Playwright runner, reporters, AI failure-summaries generator, and Allure integration).
+
+```mermaid
+flowchart LR
+  A["Test specs\n(tests/)"] --> B["Playwright Test Runner"]
+  B --> C["Reporters"]
+  C --> C1["Line Reporter"]
+  C --> C2["allure-playwright\n(allure-results/)"]
+  C --> C3["nl-failure-reporter\n(ai/failure-summaries/raw/)"]
+  C3 --> D["generate-summary (dist/generate-summary.js)\nai/failure-summaries/artifacts/ (.txt, .md)"]
+  D --> E["Copy .md & write attachment JSON\n(allure-results/)"]
+  B --> G["test-results/\n(screenshots, traces, artifacts)"]
+  E --> F["Allure Report\n(allure-report/)"]
+
+  subgraph Build_and_Cleanup
+    X["pretest -> clean:ai & build:ai (esbuild)"] --> B
+    Y["support/global-setup -> cleans previous run artifacts"] --> B
+  end
+
+  style A fill:#000,stroke:#fff,stroke-width:1px,color:#fff
+  style B fill:#000,stroke:#fff,stroke-width:1px,color:#fff
+  style C fill:#000,stroke:#fff,stroke-width:1px,color:#fff
+  style D fill:#000,stroke:#fff,stroke-width:1px,color:#fff
+  style E fill:#000,stroke:#fff,stroke-width:1px,color:#fff
+  style F fill:#000,stroke:#fff,stroke-width:1px,color:#fff
+  style G fill:#000,stroke:#fff,stroke-width:1px,color:#fff
+```
 
 ## Reference
 
 - <https://playwright.dev/docs/intro>
 - <https://playwright.dev/docs/test-configuration>
 - <https://playwright.dev/docs/page-object-models>
+## Recent changes
 
+- **UI:** Consolidated fixtures under `ui/support/fixtures/`, created `ui/ui_test_architecture.md`, and updated tests to import fixtures from the new location.
+- **API:** Added `api/api_test_architecture.md` as the canonical agent reference for API tests and consolidated model schemas under `api/models/schemas/`.
+- **Models:** Removed the duplicate root `models/` folder; canonical models now live under `api/models/`. Created `ui/models/README.md` as a placeholder for future UI models.
+- **Tooling:** Workspace setting `todo-tree.ripgrep` was set to `C:\ProgramData\chocolatey\bin\rg.exe` to resolve the Todo-Tree ripgrep error.
 ## Maintainers / Contact
 
 - Ritesh Mishra

@@ -6,7 +6,8 @@
     "allure": "^3.17.0",
     "allure-commandline": "^2.43.0",
     "allure-playwright": "^3.12.1",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "ts-node": "^10.9.1"
   },
   "scripts": {
     "test": "playwright test",
@@ -17,7 +18,12 @@
     "test:ui-testing-playground": "playwright test tests/ui-testing-playground",
     "test:orange-hrm": "playwright test tests/orange-hrm",
     "test:saucedemo": "playwright test tests/saucedemo",
-    "test:saucedemo:update-snapshots": "playwright test tests/saucedemo --update-snapshots"
+    "test:saucedemo:update-snapshots": "playwright test tests/saucedemo --update-snapshots",
+    "build:ai": "npx esbuild ai/failure-summaries/src/*.ts --platform=node --target=node16 --outdir=ai/failure-summaries/dist",
+    "clean:ai": "node scripts/clean-ai.js",
+    "pretest": "npm run clean:ai && npm run build:ai",
+    "ai:gen-summary": "npx ts-node ai/failure-summaries/src/generate-summary.ts",
+    "ai:reporter-sample": "npx ts-node ai/failure-summaries/src/generate-summary.ts ai/failure-summaries/raw/sample-artifact2.json"
   },
   "dependencies": {
     "playwright": "^1.62.1"
