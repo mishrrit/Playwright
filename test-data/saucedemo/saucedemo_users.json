@@ -1,0 +1,38 @@
+[
+  {
+    "key": "standard",
+    "username": "standard_user",
+    "password": "secret_sauce",
+    "expected": "success"
+  },
+  {
+    "key": "locked",
+    "username": "locked_out_user",
+    "password": "secret_sauce",
+    "expected": "locked"
+  },
+  {
+    "key": "problem",
+    "username": "problem_user",
+    "password": "secret_sauce",
+    "expected": "either"
+  },
+  {
+    "key": "perf",
+    "username": "performance_glitch_user",
+    "password": "secret_sauce",
+    "expected": "performance"
+  },
+  {
+    "key": "error",
+    "username": "error_user",
+    "password": "secret_sauce",
+    "expected": "either"
+  },
+  {
+    "key": "visual",
+    "username": "visual_user",
+    "password": "secret_sauce",
+    "expected": "visual"
+  }
+]

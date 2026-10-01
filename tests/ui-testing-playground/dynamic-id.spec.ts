@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { DynamicIdPage } from '../../pages/ui-testing-playground/DynamicIdPage';
 
 test('Dynamic ID: Click button with dynamic ID', async ({ page }) => {

@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { ProgressBarPage } from '../../pages/ui-testing-playground/ProgressBarPage';
 
 test('Progress Bar: Stop at 75% and verify final value', async ({ page }) => {

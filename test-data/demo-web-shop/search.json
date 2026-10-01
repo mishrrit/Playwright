@@ -1,0 +1,13 @@
+{
+  "knownProduct": {
+    "query": "laptop",
+    "keyword": "laptop",
+    "productName": "14.1-inch Laptop",
+    "sortLabel": "Price: Low to High",
+    "sortValue": "10"
+  },
+  "noMatch": {
+    "query": "zzzz-no-such-product",
+    "noResultsMessage": "No products were found that matched your criteria."
+  }
+}

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "../../support/fixtures/base";
 
 test('test', async ({ page }) => {
     await page.goto('todomvc/#/');

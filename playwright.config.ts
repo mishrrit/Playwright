@@ -11,11 +11,23 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests",
+  globalSetup: "./support/global-setup/global-setup.ts",
+  globalTeardown: "./support/global-teardown/global-teardown.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  reporter: [
+    ["line"],
+    [
+      "allure-playwright",
+      {
+        detail: true,
+        outputFolder: "allure-results",
+        suiteTitle: true,
+      },
+    ],
+  ],
   testMatch: ["**/*.spec.ts", "**/*.spec.js"],
   outputDir: "test-results",
   timeout: 30000,
@@ -81,7 +93,35 @@ export default defineConfig({
       testMatch: "**/tests/orange-hrm/**/*.spec.js",
       use: {
         ...devices["Desktop Chrome"],
-        baseURL: "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+        baseURL:
+          "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: "practice-test-automation-chromium",
+      testMatch: "**/tests/practice-test-automation/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "https://practicetestautomation.com/practice-test-login/",
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: "saucedemo-chromium",
+      testMatch: "**/tests/saucedemo/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "https://www.saucedemo.com/",
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: "demo-web-shop-chromium",
+      testMatch: "**/tests/demo-web-shop/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "https://demowebshop.tricentis.com/",
         viewport: { width: 1280, height: 720 },
       },
     },

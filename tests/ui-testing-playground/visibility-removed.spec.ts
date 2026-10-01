@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { VisibilityPage } from '../../pages/ui-testing-playground/VisibilityPage';
 
 test('Visibility: Verify removed button is not visible after hide', async ({ page }) => {

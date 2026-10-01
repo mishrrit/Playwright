@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Scenario 1.2: search for a known product and inspect sorting controls @smoke @regression",
+    "file": "C:\\projects\\Playwright\\ui\\tests\\demo-web-shop\\search-product.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('combobox').nth(1)\nExpected: \u001b[32m\"10\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mhttps://demowebshop.tricentis.com/search?q=laptop&orderby=\u001b[27m10\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('combobox').nth(1)\u001b[22m\n\u001b[2m    - waiting for navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"https://demowebshop.tricentis.com/search?q=laptop&orderby=10\"\u001b[22m\n\u001b[2m    12 × locator resolved to <select id=\"products-orderby\" name=\"products-orderby\" onchange=\"setLocation(this.value);\">…</select>\u001b[22m\n\u001b[2m       - unexpected value \"https://demowebshop.tricentis.com/search?q=laptop&orderby=10\"\u001b[22m\n",
+      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('combobox').nth(1)\nExpected: \u001b[32m\"10\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mhttps://demowebshop.tricentis.com/search?q=laptop&orderby=\u001b[27m10\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('combobox').nth(1)\u001b[22m\n\u001b[2m    - waiting for navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"https://demowebshop.tricentis.com/search?q=laptop&orderby=10\"\u001b[22m\n\u001b[2m    12 × locator resolved to <select id=\"products-orderby\" name=\"products-orderby\" onchange=\"setLocation(this.value);\">…</select>\u001b[22m\n\u001b[2m       - unexpected value \"https://demowebshop.tricentis.com/search?q=laptop&orderby=10\"\u001b[22m\n\n    at C:\\projects\\Playwright\\ui\\tests\\demo-web-shop\\search-product.spec.ts:31:39\n    at C:\\projects\\Playwright\\ui\\tests\\demo-web-shop\\search-product.spec.ts:29:5"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\demo-web-shop-search-produ-35e4e-g-controls-smoke-regression-demo-web-shop-chromium\\error-context.md"
+  ]
+}

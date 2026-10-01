@@ -431,3 +431,4 @@ Only after the user answers, either update the spec (intentional change) or file
 | `--debug=cli` / attach mechanics | [playwright-tests.md](playwright-tests.md) |
 | Mocking requests during exploration/generation | [request-mocking.md](request-mocking.md) |
 | Managing the CLI browser session | [session-management.md](session-management.md) |
+

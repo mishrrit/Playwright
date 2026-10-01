@@ -1,0 +1,7 @@
+node_modules/
+playwright-report/
+test-results/
+tests/**/test-results/
+.github/
+.vscode/
+skills/md-skill/node_modules/

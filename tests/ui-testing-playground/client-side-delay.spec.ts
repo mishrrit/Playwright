@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { ClientSideDelayPage } from '../../pages/ui-testing-playground/ClientSideDelayPage';
 
 test('Client Side Delay: Test for text visibility after clicking a button', async ({ page }) => {

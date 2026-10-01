@@ -1,4 +1,4 @@
-import { test as test } from '@playwright/test';
+import { test as test } from "../../support/fixtures/base";
 
 // test.only('Run only test', {
 //     tag: '@fast',

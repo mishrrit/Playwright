@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { ScrollBarPage } from '../../pages/ui-testing-playground/ScrollBarPage';
 
 test('ScrollBar: Test for scrolling to an element and clicking it', async ({ page }) => {

@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { DynamicTablePage } from '../../pages/ui-testing-playground/DynamicTablePage';
 
 test('Dynamic Table: Compare CPU values', async ({ page }) => {

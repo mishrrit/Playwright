@@ -273,3 +273,4 @@ playwright-cli open https://example.com
 - Delete state files after automation completes
 - Use environment variables for sensitive data
 - By default, sessions run in-memory mode which is safer for sensitive operations
+

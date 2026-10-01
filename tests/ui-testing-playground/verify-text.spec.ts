@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { VerifyTextPage } from '../../pages/ui-testing-playground/VerifyTextPage';
 
 test('Verify Text: Finding an element by displayed text has nuances', async ({ page }) => {

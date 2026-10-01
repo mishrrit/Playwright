@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from "../../support/fixtures/base";
 import { MouseOverPage } from '../../pages/ui-testing-playground/MouseOverPage';
 
 test('Mouse Over: Hover and click active link twice', async ({ page }) => {
