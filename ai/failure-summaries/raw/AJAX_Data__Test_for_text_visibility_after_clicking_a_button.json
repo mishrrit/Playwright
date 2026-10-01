@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "AJAX Data: Test for text visibility after clicking a button",
+    "file": "C:\\projects\\Playwright\\ui\\tests\\ui-testing-playground\\ajax-data.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Data loaded with AJAX get request.')\nExpected: visible\nTimeout: 16000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 16000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Data loaded with AJAX get request.')\u001b[22m\n",
+      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Data loaded with AJAX get request.')\nExpected: visible\nTimeout: 16000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 16000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Data loaded with AJAX get request.')\u001b[22m\n\n    at AjaxDataPage.verifyResponseVisible (C:\\projects\\Playwright\\ui\\pages\\ui-testing-playground\\AjaxDataPage.ts:18:41)\n    at C:\\projects\\Playwright\\ui\\tests\\ui-testing-playground\\ajax-data.spec.ts:10:24"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\ui-testing-playground-ajax-fcabf-ity-after-clicking-a-button-ui-testing-playground-firefox\\error-context.md"
+  ]
+}

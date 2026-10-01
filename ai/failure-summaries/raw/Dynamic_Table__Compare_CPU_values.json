@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Dynamic Table: Compare CPU values",
+    "file": "C:\\projects\\Playwright\\ui\\tests\\ui-testing-playground\\pom-refactored.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m-1\u001b[39m",
+      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: not \u001b[32m-1\u001b[39m\n    at DynamicTablePage.getCpuColumnIndex (C:\\projects\\Playwright\\ui\\pages\\ui-testing-playground\\DynamicTablePage.ts:15:30)\n    at DynamicTablePage.verifyTableCpuMatchesLabel (C:\\projects\\Playwright\\ui\\pages\\ui-testing-playground\\DynamicTablePage.ts:32:26)\n    at C:\\projects\\Playwright\\ui\\tests\\ui-testing-playground\\pom-refactored.spec.ts:73:9"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\ui-testing-playground-pom--a5c5d-ic-Table-Compare-CPU-values-ui-testing-playground-firefox\\error-context.md"
+  ]
+}

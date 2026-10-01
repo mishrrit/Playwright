@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Visibility: Verify removed button is not visible after hide",
+    "file": "C:\\projects\\Playwright\\ui\\tests\\ui-testing-playground\\pom-refactored.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).not.\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#removedButton')\nExpected: not visible\nReceived: visible\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"not toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#removedButton')\u001b[22m\n\u001b[2m    14 × locator resolved to <button type=\"button\" id=\"removedButton\" class=\"btn btn-danger\">Removed</button>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n",
+      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).not.\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#removedButton')\nExpected: not visible\nReceived: visible\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"not toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#removedButton')\u001b[22m\n\u001b[2m    14 × locator resolved to <button type=\"button\" id=\"removedButton\" class=\"btn btn-danger\">Removed</button>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n    at VisibilityPage.verifyRemovedButtonNotVisible (C:\\projects\\Playwright\\ui\\pages\\ui-testing-playground\\VisibilityPage.ts:19:46)\n    at C:\\projects\\Playwright\\ui\\tests\\ui-testing-playground\\pom-refactored.spec.ts:161:30"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\ui-testing-playground-pom--bc8ed-n-is-not-visible-after-hide-ui-testing-playground-chromium\\error-context.md"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Shadow DOM: Test for interacting with elements inside Shadow DOM",
+    "file": "C:\\projects\\Playwright\\ui\\tests\\ui-testing-playground\\shadow-dom.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: browserContext.grantPermissions: Unknown permission: clipboard-read",
+      "stack": "Error: browserContext.grantPermissions: Unknown permission: clipboard-read\n    at C:\\projects\\Playwright\\ui\\tests\\ui-testing-playground\\shadow-dom.spec.ts:5:19"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\ui-testing-playground-shad-a0fb9--elements-inside-Shadow-DOM-ui-testing-playground-firefox\\error-context.md"
+  ]
+}
