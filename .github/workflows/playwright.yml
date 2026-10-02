@@ -38,7 +38,7 @@ jobs:
             project: api
           - name: UI
             path: ui
-            project: ui-testing-playground-chromium
+            project: saucedemo-chromium
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

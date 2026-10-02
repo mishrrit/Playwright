@@ -55,41 +55,9 @@ Requirements & conventions
 
 - Follow Page Object Model for UI tests and centralize selectors in `ui/selectors/`.
 - Tests must include a JSON metadata block at the top (see `ui/ui_test_architecture.md` and `api/api_test_architecture.md` for exact fields).
-- Naming: kebab-case for files and identifiers; agent-generated tests should be prefixed with `YYYYMMDD-` when created by an agent.
+- Naming: kebab-case; agent-generated tests should be prefixed with `YYYYMMDD-` when created by an agent.
 - Do not hard-code secrets; use environment variables and CI secret stores.
 - Do not modify `playwright.config.ts` or global reporter settings without explicit human approval.
-
-Test plan metadata & naming
-
-- Every test plan in `test-plans/` MUST include a YAML front-matter metadata block containing at minimum these fields:
-
-  ```yaml
-  ---
-  title: "Short descriptive title"
-  type: "ui"  # allowed values: "ui" or "api"
-  feature: "authentication"  # feature or area the plan covers
-  author: "agent-or-username"
-  date: "YYYY-MM-DD"
-  scenarios:
-    - id: 1
-      title: "User can log in"
-      priority: "high"
-  ---
-  ```
-
-- Filename convention for plans: `test-plans/YYYYMMDD-<type>-<feature>-<short-desc>.md`.
-  - Example: `test-plans/20261002-ui-authentication-login-flows.md`
-  - `<type>` must be `ui` or `api` and determines where generated artifacts are placed.
-
-- When a plan's `type` is `ui`, generator MUST place tests under `ui/tests/<suite>/` and name specs:
-  `ui/tests/<suite>/YYYYMMDD-ui-<suite>-<short-desc>.spec.ts`.
-  Example: `ui/tests/auth/20261002-ui-auth-login.spec.ts`.
-
-- When a plan's `type` is `api`, generator MUST place tests under `api/tests/<suite>/` and name specs:
-  `api/tests/<suite>/YYYYMMDD-api-<suite>-<short-desc>.spec.ts`.
-  Example: `api/tests/user/20261002-api-user-create.spec.ts`.
-
-- Each plan must explicitly state the target `project` to use when running (Playwright project name) and a recommended `run` command example in the plan body.
 
 Stage gates and human approvals
 
