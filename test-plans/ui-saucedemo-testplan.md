@@ -1,5 +1,5 @@
----
-title: "Sauce Demo — Users Test Plan"
+﻿---
+title: "Sauce Demo â€” Users Test Plan"
 type: "ui"
 feature: "saucedemo"
 author: "agent/playwright-orchestrator"
@@ -10,12 +10,12 @@ date: "2026-10-02"
 This plan exercises all user accounts listed on the Sauce Demo login page and covers functional, negative, performance, and visual checks per user. Base URL: https://www.saucedemo.com/
 
 ## Listed users and credentials (from the login page)
-- `standard_user` — password: `secret_sauce`
-- `locked_out_user` — password: `secret_sauce`
-- `problem_user` — password: `secret_sauce`
-- `performance_glitch_user` — password: `secret_sauce`
-- `error_user` — password: `secret_sauce`
-- `visual_user` — password: `secret_sauce`
+- `standard_user` â€” password: `secret_sauce`
+- `locked_out_user` â€” password: `secret_sauce`
+- `problem_user` â€” password: `secret_sauce`
+- `performance_glitch_user` â€” password: `secret_sauce`
+- `error_user` â€” password: `secret_sauce`
+- `visual_user` â€” password: `secret_sauce`
 
 ## Test matrix: common scenarios (applies to all applicable users)
 - Login: valid credentials -> lands on Products page.
@@ -93,4 +93,5 @@ This plan exercises all user accounts listed on the Sauce Demo login page and co
 ---
 
 If you want, I can now generate Playwright test skeletons (TS) for these cases or create the `tests/saucedemo/` folder with parametrized specs. Which would you like next?
+
 

@@ -1,4 +1,4 @@
----
+﻿---
 title: "Todo App Basic Operations"
 type: "ui"
 feature: "todo-mvc"
@@ -56,4 +56,5 @@ This test plan covers the basic operations for the TodoMVC demo app at `https://
 - Verify only `Buy groceries` remains
 - Verify the todo count shows `1`
 - Verify `Read book` is removed from the list
+
 
