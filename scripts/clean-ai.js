@@ -104,7 +104,17 @@ const dirs = [
 
 for (const d of dirs) safeRm(d);
 
-// rotate allure-results keeping 3 past runs
-rotateAllureResults("allure-results", "allure-archive", 3);
+// rotate allure-results keeping N past runs (default 3). Controlled via ALLURE_KEEP_RUNS env var.
+const keepEnv = process.env.ALLURE_KEEP_RUNS;
+let keep = 3;
+if (keepEnv) {
+  const parsed = parseInt(keepEnv, 10);
+  if (!Number.isNaN(parsed) && parsed >= 0) {
+    keep = parsed;
+  } else {
+    console.warn(`[clean-ai] invalid ALLURE_KEEP_RUNS='${keepEnv}', using default ${keep}`);
+  }
+}
+rotateAllureResults("allure-results", "allure-archive", keep);
 
-console.log("clean-ai finished");
+console.log(`clean-ai finished (kept ${keep} allure archives)`);
