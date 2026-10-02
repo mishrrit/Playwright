@@ -6,7 +6,7 @@ author: "agent/playwright-orchestrator"
 date: "2026-10-02"
 ---
 
-# Todo App Basic Operations
+## Todo App Basic Operations
 
 ## Purpose
 

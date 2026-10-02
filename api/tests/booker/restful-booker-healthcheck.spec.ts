@@ -10,11 +10,10 @@
 }
 */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from "../../fixtures/apiFixtures";
 
-test('Healthcheck - GET /ping', async ({ request }) => {
-  const base = process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com';
-  const resp = await request.get(`${base}/ping`);
+test("Healthcheck - GET /ping", async ({ bookingService }) => {
+  const { status } = await bookingService!.ping();
   // docs indicate a 201 or 200; accept both
-  expect([200, 201]).toContain(resp.status());
+  expect([200, 201]).toContain(status);
 });

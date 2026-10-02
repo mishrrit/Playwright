@@ -112,7 +112,9 @@ if (keepEnv) {
   if (!Number.isNaN(parsed) && parsed >= 0) {
     keep = parsed;
   } else {
-    console.warn(`[clean-ai] invalid ALLURE_KEEP_RUNS='${keepEnv}', using default ${keep}`);
+    console.warn(
+      `[clean-ai] invalid ALLURE_KEEP_RUNS='${keepEnv}', using default ${keep}`,
+    );
   }
 }
 rotateAllureResults("allure-results", "allure-archive", keep);

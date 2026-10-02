@@ -10,13 +10,12 @@
 }
 */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from "../../fixtures/apiFixtures";
 
-test('Get booking ids - GET /booking', async ({ request }) => {
-  const base = process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com';
-  const resp = await request.get(`${base}/booking`);
-  expect(resp.status()).toBe(200);
-  const body = await resp.json();
+test("Get booking ids - GET /booking", async ({ bookingService }) => {
+  const { status, body } = await bookingService!.list();
+  expect(status).toBe(200);
   expect(Array.isArray(body)).toBeTruthy();
-  if (body.length > 0) expect(body[0].hasOwnProperty('bookingid')).toBeTruthy();
+  if ((body as any).length > 0)
+    expect((body as any)[0].hasOwnProperty("bookingid")).toBeTruthy();
 });

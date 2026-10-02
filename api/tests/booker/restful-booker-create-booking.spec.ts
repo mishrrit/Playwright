@@ -10,22 +10,20 @@
 }
 */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from "../../fixtures/apiFixtures";
 
 const sampleBooking = {
-  firstname: 'Agent',
-  lastname: 'Tester',
+  firstname: "Agent",
+  lastname: "Tester",
   totalprice: 123,
   depositpaid: false,
-  bookingdates: { checkin: '2026-10-01', checkout: '2026-10-02' },
-  additionalneeds: 'Breakfast'
+  bookingdates: { checkin: "2026-10-01", checkout: "2026-10-02" },
+  additionalneeds: "Breakfast",
 };
 
-test('Create booking - POST /booking', async ({ request }) => {
-  const base = process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com';
-  const resp = await request.post(`${base}/booking`, { data: sampleBooking });
-  expect(resp.status()).toBe(200);
-  const body = await resp.json();
-  expect(body).toHaveProperty('bookingid');
-  expect(body).toHaveProperty('booking');
+test("Create booking - POST /booking", async ({ bookingService }) => {
+  const { status, body } = await bookingService!.create(sampleBooking);
+  expect(status).toBe(200);
+  expect(body as any).toHaveProperty("bookingid");
+  expect(body as any).toHaveProperty("booking");
 });

@@ -8,6 +8,7 @@ type Fixtures = {
   apiRequest: APIRequestContext;
   authService: AuthService;
   authToken?: string;
+  bookingService?: import("../services/BookingService").BookingService;
 };
 
 export const test = base.extend<Fixtures>({
@@ -33,6 +34,11 @@ export const test = base.extend<Fixtures>({
       Logger.error("Auth fixture failed", err);
       await use(undefined);
     }
+  },
+
+  bookingService: async ({ apiRequest }, use) => {
+    const { BookingService } = await import("../services/BookingService");
+    await use(new BookingService(apiRequest));
   },
 });
 

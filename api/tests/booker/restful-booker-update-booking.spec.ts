@@ -10,50 +10,48 @@
 }
 */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from "../../fixtures/apiFixtures";
 
 const initialBooking = {
-  firstname: 'Agent',
-  lastname: 'Updater',
+  firstname: "Agent",
+  lastname: "Updater",
   totalprice: 222,
   depositpaid: false,
-  bookingdates: { checkin: '2026-10-01', checkout: '2026-10-02' },
-  additionalneeds: 'None'
+  bookingdates: { checkin: "2026-10-01", checkout: "2026-10-02" },
+  additionalneeds: "None",
 };
 
 const updatedBooking = {
-  firstname: 'Agent',
-  lastname: 'Updater-Edited',
+  firstname: "Agent",
+  lastname: "Updater-Edited",
   totalprice: 333,
   depositpaid: true,
-  bookingdates: { checkin: '2026-10-05', checkout: '2026-10-06' },
-  additionalneeds: 'Lunch'
+  bookingdates: { checkin: "2026-10-05", checkout: "2026-10-06" },
+  additionalneeds: "Lunch",
 };
 
-async function getAuthToken(request) {
-  const base = process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com';
-  const r = await request.post(`${base}/auth`, { data: { username: 'admin', password: 'password123' } });
-  const b = await r.json();
-  return b.token;
+async function getAuthToken(svc) {
+  const { status, body } = await svc.auth("admin", "password123");
+  if (status !== 200) throw new Error("auth failed");
+  return (body as any).token;
 }
 
-test('Update booking - PUT /booking/:id', async ({ request }) => {
-  const base = process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com';
-  const createResp = await request.post(`${base}/booking`, { data: initialBooking });
-  expect(createResp.status()).toBe(200);
-  const created = await createResp.json();
-  const id = created.bookingid;
+test("Update booking - PUT /booking/:id", async ({ bookingService }) => {
+  const { status: createStatus, body: created } =
+    await bookingService!.create(initialBooking);
+  expect(createStatus).toBe(200);
+  const id = (created as any).bookingid;
 
-  const token = await getAuthToken(request);
-  const resp = await request.put(`${base}/booking/${id}`, {
-    data: updatedBooking,
-    headers: { Cookie: `token=${token}` },
-  });
+  const token = await getAuthToken(bookingService!);
+  const { status, body } = await bookingService!.update(
+    id,
+    updatedBooking,
+    token,
+  );
 
-  expect(resp.status()).toBe(200);
-  const body = await resp.json();
-  expect(body.lastname).toBe(updatedBooking.lastname);
+  expect(status).toBe(200);
+  expect((body as any).lastname).toBe(updatedBooking.lastname);
 
   // cleanup
-  await request.delete(`${base}/booking/${id}`, { headers: { Cookie: `token=${token}` } });
+  await bookingService!.delete(id, token);
 });

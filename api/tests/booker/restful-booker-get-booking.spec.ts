@@ -10,28 +10,34 @@
 }
 */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from "../../fixtures/apiFixtures";
 
 const sampleBooking = {
-  firstname: 'Agent',
-  lastname: 'Getter',
+  firstname: "Agent",
+  lastname: "Getter",
   totalprice: 111,
   depositpaid: false,
-  bookingdates: { checkin: '2026-10-01', checkout: '2026-10-02' },
-  additionalneeds: 'None'
+  bookingdates: { checkin: "2026-10-01", checkout: "2026-10-02" },
+  additionalneeds: "None",
 };
 
-test('Get booking by id - create then GET /booking/:id', async ({ request }) => {
-  const base = process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com';
-  const createResp = await request.post(`${base}/booking`, { data: sampleBooking });
-  expect(createResp.status()).toBe(200);
-  const created = await createResp.json();
-  const id = created.bookingid;
+test("Get booking by id - create then GET /booking/:id", async ({
+  bookingService,
+}) => {
+  const { status: createStatus, body: created } =
+    await bookingService!.create(sampleBooking);
+  expect(createStatus).toBe(200);
+  const id = (created as any).bookingid;
 
-  const resp = await request.get(`${base}/booking/${id}`);
-  expect(resp.status()).toBe(200);
-  const body = await resp.json();
-  expect(body.firstname).toBe(sampleBooking.firstname);
-  // cleanup
-  await request.delete(`${base}/booking/${id}`);
+  const { status, body } = await bookingService!.getById(id);
+  expect(status).toBe(200);
+  expect((body as any).firstname).toBe(sampleBooking.firstname);
+  // cleanup (requires auth)
+  const { status: authStatus, body: authBody } = await bookingService!.auth(
+    "admin",
+    "password123",
+  );
+  if (authStatus !== 200) throw new Error("auth failed for cleanup");
+  const token = (authBody as any).token;
+  await bookingService!.delete(id, token);
 });

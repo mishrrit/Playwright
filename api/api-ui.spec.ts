@@ -3,6 +3,11 @@ import { UserService } from "./services/UserService";
 import { fakeUser } from "./utils/fakerFactory";
 import { retry } from "./utils/retry";
 
+// This test targets an app with /users endpoints; skip when running against Restful-Booker demo
+if ((process.env.API_BASE_URL || "").includes("restful-booker")) {
+  test.skip(true, "Skipped: API_BASE_URL is Restful-Booker demo");
+}
+
 test("API -> UI integration: create user via API, login via UI, verify via API", async ({
   apiRequest,
   page,

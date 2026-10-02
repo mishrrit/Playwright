@@ -10,7 +10,7 @@ import { defineConfig, devices } from "@playwright/test";
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: "./ui/tests",
+  testDir: ".",
   globalSetup: "./ui/support/global-setup/global-setup.ts",
   globalTeardown: "./ui/support/global-teardown/global-teardown.ts",
   fullyParallel: true,
@@ -134,9 +134,7 @@ export default defineConfig({
       testMatch: "**/api/**/*.spec.ts",
       use: {
         baseURL:
-          process.env.APP_BASE_URL ||
-          process.env.API_BASE_URL ||
-          "http://localhost:3000",
+          process.env.API_BASE_URL || "https://restful-booker.herokuapp.com",
       },
     },
   ],

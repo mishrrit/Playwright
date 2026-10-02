@@ -10,12 +10,10 @@
 }
 */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from "../../fixtures/apiFixtures";
 
-test('Create token - POST /auth', async ({ request }) => {
-  const base = process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com';
-  const resp = await request.post(`${base}/auth`, { data: { username: 'admin', password: 'password123' } });
-  expect(resp.status(), 'auth status').toBe(200);
-  const body = await resp.json();
-  expect(body.token, 'token present').toBeTruthy();
+test("Create token - POST /auth", async ({ bookingService }) => {
+  const { status, body } = await bookingService!.auth("admin", "password123");
+  expect(status, "auth status").toBe(200);
+  expect((body as any).token, "token present").toBeTruthy();
 });
