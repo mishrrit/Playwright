@@ -1,3 +1,11 @@
+---
+title: "Todo App Basic Operations"
+type: "ui"
+feature: "todo-mvc"
+author: "agent/playwright-orchestrator"
+date: "2026-10-02"
+---
+
 # Todo App Basic Operations
 
 ## Purpose

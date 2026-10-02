@@ -1,3 +1,11 @@
+---
+title: "Demo Web Shop Catalog and Validation"
+type: "ui"
+feature: "demo-web-shop"
+author: "agent/playwright-orchestrator"
+date: "2026-10-02"
+---
+
 # Test Plan: Demo Web Shop Catalog and Validation
 
 **Target:** https://demowebshop.tricentis.com/

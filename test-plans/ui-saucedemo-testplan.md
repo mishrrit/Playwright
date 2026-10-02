@@ -1,4 +1,10 @@
-# Sauce Demo — Users Test Plan
+---
+title: "Sauce Demo — Users Test Plan"
+type: "ui"
+feature: "saucedemo"
+author: "agent/playwright-orchestrator"
+date: "2026-10-02"
+---
 
 ## Overview
 This plan exercises all user accounts listed on the Sauce Demo login page and covers functional, negative, performance, and visual checks per user. Base URL: https://www.saucedemo.com/
