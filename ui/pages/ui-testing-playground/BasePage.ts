@@ -1,4 +1,4 @@
-import { Locator } from "playwright/test";
+import { Locator } from "@playwright/test";
 import { BasePage as SharedBasePage } from "../common/BasePage";
 
 export class BasePage extends SharedBasePage {

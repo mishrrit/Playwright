@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Books smoke: list and create-get-delete",
+    "file": "C:\\projects\\Playwright\\api\\tests\\fakerest\\books.smoke.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: HTTP 404 - {\"type\":\"https://tools.ietf.org/html/rfc7231#section-6.5.4\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-f8cd3171e23b7f4c9d127729caa1ce52-70e25895fad9e147-00\"}",
+      "stack": "Error: HTTP 404 - {\"type\":\"https://tools.ietf.org/html/rfc7231#section-6.5.4\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-f8cd3171e23b7f4c9d127729caa1ce52-70e25895fad9e147-00\"}\n    at BooksService.handleResponse (C:\\projects\\Playwright\\api\\base\\BaseAPI.ts:40:19)\n    at C:\\projects\\Playwright\\api\\tests\\fakerest\\books.smoke.spec.ts:32:15"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\api-tests-fakerest-books.s-e5f43--list-and-create-get-delete-api\\error-context.md"
+  ]
+}

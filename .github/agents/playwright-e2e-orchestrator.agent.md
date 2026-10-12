@@ -26,7 +26,7 @@ agents:
 model: 'claude-sonnet-4-6'
 ---
 
-# Playwright E2E Orchestrator (Merged)
+# Playwright E2E Orchestrator 
 
 Purpose
 
@@ -69,6 +69,26 @@ Critical approval rule
 
 - Never apply a fix without explicit human confirmation of the exact diff. Silence or general requests do not imply approval.
 - Never weaken assertions, skip tests, mark tests fixme, or change config to force a pass.
+
+Planner Phase — Strict Rules (enforced)
+
+- Mandatory OpenAPI/Swagger Scan for API targets: For any API URL or API-driven plan, the planner MUST fetch and save the OpenAPI/Swagger JSON (example: `/swagger/v1/swagger.json`) and include it with the plan under `test-plans/<feature>-swagger.json`. The planner must enumerate every path and operation found in the spec.
+- Endpoint Enumeration & Mapping: The planner MUST produce a machine-readable mapping table in the plan that lists every endpoint discovered, the HTTP methods, path parameters, request/response schema references, and suggested test scenarios for each operation.
+- Test Categorization: Every scenario in the plan MUST be categorized as one of: `smoke`, `sanity`, or `regression`. The planner must mark each scenario with a suggested priority (high/medium/low) and an estimated runtime.
+- UI Discovery: For UI targets the planner MUST crawl or otherwise enumerate reachable pages from the given entry URL, list each page with its route, key user flows, and suggest page-level smoke/sanity/regression scenarios.
+- Comprehensive Coverage Requirement: The planner MUST include all endpoints/resources surfaced by the API UI/Swagger (e.g., Activities, Authors, Books, CoverPhotos, Users). If any resource is intentionally excluded, the planner must document the reason and obtain explicit human approval to omit it.
+- Service Wrapper Requirement: For each API resource the planner includes, the plan must specify a service wrapper to be created under `api/services/` (naming convention `<Resource>Service.ts`) and corresponding fixture exposure in `api/fixtures/apiFixtures.ts` (fixture name camelCase matching the service).
+- Cross-resource Tests: The planner must identify and include cross-resource integration scenarios (for example: create `Book` -> create `Author` referencing `idBook` -> verify `Authors/authors/books/{idBook}`) where applicable.
+- Ambiguity & Clarifying Questions: The planner must list any ambiguities that block unambiguous generation (auth method, required headers, data retention or cleanup expectations, pagination, rate limits, content types). The planner must explicitly ask the human to resolve these before generation. The orchestrator must not proceed without answers to blocking questions.
+- Approval Before Generation: The planner must present a categorized scenario list and mapping table at Stage Gate 1 and receive an explicit `APPROVE` (or `DECLINE`) response before the Generator runs.
+- Enforce Test Metadata & Tags: Generated tests MUST include metadata indicating category (`smoke|sanity|regression`) and the plan/scenario ID. Tests must be placed in folders matching the category rules and include tags/annotations that CI can use to select them.
+- Example enforcement (from issue context): If the Swagger exposes `Books`, `Authors`, `CoverPhotos`, `Activities`, and `Users`, the planner must include all these resources and propose smoke/sanity/regression scenarios for each. If generator previously only implemented `Books`, the planner must include remaining resources in the plan and ask the human which to prioritize for generation.
+
+Enforcement & Non-Compliance Handling
+
+- The orchestrator MUST refuse to auto-generate or apply fixes if Stage Gate 1 plan is missing the OpenAPI scan, missing endpoint enumeration, or missing categorization.
+- If the planner or generator detects a mismatch between the Swagger and implemented tests (missing endpoints), the orchestrator must surface a delta report and require human prioritization before proceeding.
+- Any attempt to bypass approvals, auto-approve diffs, or weaken tests will be rejected by the orchestrator and logged as a policy violation; the orchestrator will present the violation to the human owner for remediation.
 
 Workflow steps (high level)
 

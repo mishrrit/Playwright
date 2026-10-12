@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "CoverPhotos smoke: list and create-get-delete",
+    "file": "C:\\projects\\Playwright\\api\\tests\\fakerest\\coverphotos.smoke.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: HTTP 404 - {\"type\":\"https://tools.ietf.org/html/rfc7231#section-6.5.4\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-bddd9b9877dd224fb468918643100ca7-ceb00099efecf649-00\"}",
+      "stack": "Error: HTTP 404 - {\"type\":\"https://tools.ietf.org/html/rfc7231#section-6.5.4\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-bddd9b9877dd224fb468918643100ca7-ceb00099efecf649-00\"}\n    at CoverPhotosService.handleResponse (C:\\projects\\Playwright\\api\\base\\BaseAPI.ts:40:19)\n    at C:\\projects\\Playwright\\api\\tests\\fakerest\\coverphotos.smoke.spec.ts:45:15"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\api-tests-fakerest-coverph-fa6dd--list-and-create-get-delete-api\\error-context.md"
+  ]
+}

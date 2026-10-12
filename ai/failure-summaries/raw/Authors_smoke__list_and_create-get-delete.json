@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Authors smoke: list and create-get-delete",
+    "file": "C:\\projects\\Playwright\\api\\tests\\fakerest\\authors.smoke.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: HTTP 404 - {\"type\":\"https://tools.ietf.org/html/rfc7231#section-6.5.4\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-b87a0bc298de954c9e230ce28407d642-9e53986a0d36b343-00\"}",
+      "stack": "Error: HTTP 404 - {\"type\":\"https://tools.ietf.org/html/rfc7231#section-6.5.4\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-b87a0bc298de954c9e230ce28407d642-9e53986a0d36b343-00\"}\n    at AuthorsService.handleResponse (C:\\projects\\Playwright\\api\\base\\BaseAPI.ts:40:19)\n    at C:\\projects\\Playwright\\api\\tests\\fakerest\\authors.smoke.spec.ts:47:15"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\api-tests-fakerest-authors-f383c--list-and-create-get-delete-api\\error-context.md"
+  ]
+}

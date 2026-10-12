@@ -43,14 +43,64 @@ Test metadata header (top of each test file)
 - Required fields: `id`, `suite`, `title`, `priority`, `tags`.
 - Optional: `owner`, `description`, `relatedTicket`, `contracts` (list of schema ids to validate against).
 
+## Multiple API hosts and automatic endpoint routing
+
+Use [apiFixtures.ts](./fixtures/apiFixtures.ts) and [APIClient.ts](./APIClient.ts), not hardcoded hostnames. Each service fixture receives its own API's request context automatically, so Booking and FakeRest suites can run together or in parallel without changing environment variables between tests.
+
+| API target | Host variable | Default host | Service fixtures |
+|---|---|---|---|
+| `booking` | `BOOKING_API_BASE_URL` | `https://restful-booker.herokuapp.com` | `bookingService` |
+| `fakeRest` | `FAKEREST_API_BASE_URL` | `https://fakerestapi.azurewebsites.net` | `fakeRestService`, `booksService`, `authorsService`, `coverPhotosService`, `activitiesService`, `usersService` |
+| `default` | `API_BASE_URL` | `https://api.dev.example.com` | Generic `apiRequest`, `authService`, API/UI integration |
+
+Set these variables in the ignored root `.env` file or your CI environment. `NODE_ENV` remains environment metadata; supply the appropriate host variables for each environment. It does not discover hostnames or select an environment file.
+
+- Named targets **do not fall back to `API_BASE_URL`**. Migrate an existing Booking-only configuration to `BOOKING_API_BASE_URL`, or a FakeRest-only configuration to `FAKEREST_API_BASE_URL`.
+- Credentials are scoped too: `BOOKING_API_KEY`, `BOOKING_API_USER`, `BOOKING_API_PASS`, and the equivalent `FAKEREST_API_*` variables. Generic `API_KEY`, `API_USER`, and `API_PASS` apply only to `default`. These are available in the configuration; authentication remains API-specific and keys are not automatically sent in an assumed header.
+- Per-target `*_TIMEOUT_MS` and `*_RETRY_ATTEMPTS` override the generic settings. The retry configuration remains metadata for retry helpers; the client does not automatically retry requests.
+- Request contexts own default headers and cookies and are disposed after each test. Do not mutate shared configuration or `process.env` inside tests.
+- Configure a host plus optional gateway prefix, such as `https://gateway.example.test/booking-service`. [BaseAPI.ts](./base/BaseAPI.ts) resolves `/booking/123` as `https://gateway.example.test/booking-service/booking/123`. Trailing slashes are normalized automatically.
+- Service resource/version paths remain relative in service classes (for example `/api/v1/Books`). Do not repeat these paths in the configured gateway prefix. Changing hosts does not infer changes to an API's resource names or version.
+- Direct context calls must use relative paths **without a leading slash** to preserve a gateway prefix. Built-in Playwright `request` and the project's generic `apiRequest` are different fixtures; use the latter for named routing.
+
+For a raw-request suite, explicitly select the target once:
+
+```typescript
+import { test, expect } from "../../fixtures/apiFixtures";
+
+test.use({ apiTarget: "fakeRest" });
+
+test("lists books", async ({ apiRequest }) => {
+  const response = await apiRequest.get("api/v1/Books");
+  expect(response.status()).toBe(200);
+});
+```
+
+A test can use `bookingService` and `booksService` together without `test.use`. For direct context access, use `bookingApiRequest` and `fakeRestApiRequest`. `apiTarget` only selects the generic `apiRequest`/`apiConfig`; it never redirects named service fixtures.
+
+When adding an API:
+
+1. Register its name, environment-variable prefix, and default host in `API_TARGETS` in [apiConfig.ts](./config/apiConfig.ts). `APIName` updates automatically.
+2. Reuse `apiRequest` with `test.use({ apiTarget: "newTarget" })`, or wire a dedicated request fixture to `APIClient.create("newTarget")` and inject it into the new service.
+3. Extend `BaseAPI` and keep endpoint paths relative. Do not construct URLs with `process.env`, embed hostnames, or change the shared `api` project's hostname to switch services.
+4. Add a local routing regression to [api-routing.spec.ts](./tests/framework/api-routing.spec.ts). Tests may override the `apiConfigs` fixture with complete per-target configurations; no global environment mutation is needed.
+
+`APIClient.create()` and `API_CONFIG` retain the generic default configuration for legacy callers. Manually created contexts must be disposed in `finally` blocks. Custom configurations passed to `APIClient.create(config)` receive the same base-URL validation and normalization as named targets.
+
+Run the offline regression suite (local servers only; no browser or public API required):
+
+```powershell
+npx playwright test --config=api\config\framework.playwright.config.ts
+```
+
 Test template (Playwright + request)
 
-- Use Playwright's `request` fixture or the project's HTTP client wrapper in `api/helpers`.
+- Use the project's `apiRequest` fixture or named service fixtures.
 - Follow this scaffold so tools and reporters can parse intent.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../fixtures/apiFixtures';
 import Ajv from 'ajv';
-import userSchema from '../models/schemas/user.schema.json';
+import userSchema from '../../models/schemas/user.schema.json';
 
 const ajv = new Ajv();
 
@@ -59,7 +109,7 @@ METADATA JSON BLOCK
 */
 
 test.describe('user - Create', () => {
-  test('Create user with valid payload', async ({ request }) => {
+  test('Create user with valid payload', async ({ apiRequest }) => {
     // Arrange
     const payload = {
       name: 'Jane Doe',
@@ -68,7 +118,7 @@ test.describe('user - Create', () => {
     };
 
     // Act
-    const resp = await request.post(`${process.env.API_BASE_URL}/users`, { data: payload });
+    const resp = await apiRequest.post('users', { data: payload });
 
     // Assert
     expect(resp.status()).toBe(201);
@@ -102,7 +152,7 @@ Reporting and attachments
 Code style and linting
 
 - Follow TypeScript, Prettier, and ESLint project conventions.
-- Avoid duplicating HTTP client logic inside tests; reuse `api/helpers/client.ts`.
+- Avoid duplicating HTTP client logic inside tests; reuse [APIClient.ts](./APIClient.ts) through [apiFixtures.ts](./fixtures/apiFixtures.ts).
 
 PR checklist for generated API tests
 
@@ -114,6 +164,7 @@ PR checklist for generated API tests
 Generator guidelines for agents (how to use this file)
 
 - Always create the metadata JSON block first.
+- Use the named service fixture for the target API. For new APIs, follow the registration steps above before generating tests; never embed a hostname in a test or service endpoint.
 - Place the test in `api/tests/<suite>/` and name it following the naming convention.
 - Add or reuse JSON schemas under `api/models/schemas` and reference them in `contracts` metadata when applicable.
 - Add fixture data under `api/support/fixtures/` and reference it by relative path.
@@ -131,15 +182,15 @@ Example minimal generated file
 }
 */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../../fixtures/apiFixtures';
 import Ajv from 'ajv';
-import userSchema from '../models/schemas/user.schema.json';
+import userSchema from '../../models/schemas/user.schema.json';
 
 const ajv = new Ajv();
 
-test('Create user with valid payload', async ({ request }) => {
+test('Create user with valid payload', async ({ apiRequest }) => {
   const payload = { name: 'Agent User', email: `agent.${Date.now()}@example.com`, password: 'P@ssw0rd' };
-  const resp = await request.post(`${process.env.API_BASE_URL}/users`, { data: payload });
+  const resp = await apiRequest.post('users', { data: payload });
   expect(resp.status()).toBe(201);
   const body = await resp.json();
   expect(ajv.validate(userSchema, body)).toBeTruthy();

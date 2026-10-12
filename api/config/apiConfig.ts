@@ -12,24 +12,79 @@ export interface APIConfig {
   secrets: { apiKey?: string; username?: string; password?: string };
 }
 
-const env = (process.env.NODE_ENV as Env) || "dev";
+export const API_TARGETS = {
+  default: { prefix: "API", baseUrl: "https://api.dev.example.com" },
+  booking: {
+    prefix: "BOOKING_API",
+    baseUrl: "https://restful-booker.herokuapp.com",
+  },
+  fakeRest: {
+    prefix: "FAKEREST_API",
+    baseUrl: "https://fakerestapi.azurewebsites.net",
+  },
+} as const;
 
-export const API_CONFIG: APIConfig = {
-  env,
-  baseUrl: process.env.API_BASE_URL || "https://api.dev.example.com",
-  timeoutMs: Number(process.env.API_TIMEOUT_MS || 15000),
-  defaultHeaders: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
-  retry: {
-    attempts: Number(process.env.API_RETRY_ATTEMPTS || 3),
-    backoffMs: 300,
-    maxBackoffMs: 5000,
-  },
-  secrets: {
-    apiKey: process.env.API_KEY,
-    username: process.env.API_USER,
-    password: process.env.API_PASS,
-  },
-};
+export type APIName = keyof typeof API_TARGETS;
+
+export function normalizeBaseUrl(value: string): string {
+  const cleaned = value.trim().replace(/^['"]+|['"]+$/g, "").trim();
+  let url: URL;
+  try {
+    url = new URL(cleaned);
+  } catch {
+    throw new Error("API base URL must be an absolute HTTP(S) URL");
+  }
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash
+  ) {
+    throw new Error(
+      "API base URL must use HTTP(S) without credentials, query or fragment",
+    );
+  }
+  // A trailing slash preserves gateway prefixes when resolving relative endpoints.
+  url.pathname = `${url.pathname.replace(/\/+$/, "")}/`;
+  return url.toString();
+}
+
+export function getAPIConfig(
+  name: APIName = "default",
+  variables: NodeJS.ProcessEnv = process.env,
+): APIConfig {
+  if (!Object.prototype.hasOwnProperty.call(API_TARGETS, name)) {
+    throw new Error(`Unknown API target: ${name}`);
+  }
+  const target = API_TARGETS[name];
+  const configuredUrl = variables[`${target.prefix}_BASE_URL`]
+    ?.trim()
+    .replace(/^['"]+|['"]+$/g, "")
+    .trim();
+  return {
+    env: (variables.NODE_ENV as Env) || "dev",
+    baseUrl: normalizeBaseUrl(configuredUrl || target.baseUrl),
+    timeoutMs: Number(
+      variables[`${target.prefix}_TIMEOUT_MS`] || variables.API_TIMEOUT_MS || 15000,
+    ),
+    defaultHeaders: {
+      Accept: "application/json; v=1.0",
+      "Content-Type": "application/json",
+    },
+    retry: {
+      attempts: Number(
+        variables[`${target.prefix}_RETRY_ATTEMPTS`] || variables.API_RETRY_ATTEMPTS || 3,
+      ),
+      backoffMs: 300,
+      maxBackoffMs: 5000,
+    },
+    secrets: {
+      apiKey: variables[`${target.prefix}_KEY`],
+      username: variables[`${target.prefix}_USER`],
+      password: variables[`${target.prefix}_PASS`],
+    },
+  };
+}
+
+export const API_CONFIG: APIConfig = getAPIConfig();

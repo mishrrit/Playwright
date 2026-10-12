@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Negative: create invalid payload returns 400/422",
+    "file": "C:\\projects\\Playwright\\api\\tests\\fakerest\\books.sanity.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32mundefined\u001b[39m\nReceived array: \u001b[31m[400, 422, 500]\u001b[39m",
+      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32mundefined\u001b[39m\nReceived array: \u001b[31m[400, 422, 500]\u001b[39m\n    at C:\\projects\\Playwright\\api\\tests\\fakerest\\books.sanity.spec.ts:68:31"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\api-tests-fakerest-books.s-6a2ac-lid-payload-returns-400-422-api\\error-context.md"
+  ]
+}

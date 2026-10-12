@@ -1,14 +1,16 @@
-import { expect, Locator } from 'playwright/test';
-import { BasePage } from './BasePage';
+import { expect, Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
 export class NonBreakingSpacePage extends BasePage {
-    readonly myButton: Locator = this.page.getByRole('button', { name: 'My Button' });
+  readonly myButton: Locator = this.page.getByRole("button", {
+    name: "My Button",
+  });
 
-    async navigateToNonBreakingSpace() {
-        await this.clickLink('Non-Breaking Space');
-    }
+  async navigateToNonBreakingSpace() {
+    await this.clickLink("Non-Breaking Space");
+  }
 
-    async verifyButtonVisible() {
-        await expect(this.myButton).toBeVisible();
-    }
+  async verifyButtonVisible() {
+    await expect(this.myButton).toBeVisible();
+  }
 }

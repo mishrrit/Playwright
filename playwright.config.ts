@@ -11,7 +11,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: ".",
-  globalSetup: "./ui/support/global-setup/global-setup.ts",
+  globalSetup: "./playwright-global-setup.ts",
   globalTeardown: "./ui/support/global-teardown/global-teardown.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

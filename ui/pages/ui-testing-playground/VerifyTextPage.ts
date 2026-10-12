@@ -1,15 +1,16 @@
-import { expect, Locator } from 'playwright/test';
-import { BasePage } from './BasePage';
+import { expect, Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
 export class VerifyTextPage extends BasePage {
-    readonly welcomeButton: Locator = this.page.locator('.badge-secondary',
-        { hasText: 'Welcome...' });
+  readonly welcomeButton: Locator = this.page.locator(".badge-secondary", {
+    hasText: "Welcome...",
+  });
 
-    async navigateToVerifyText() {
-        await this.clickLink('Verify Text');
-    }
+  async navigateToVerifyText() {
+    await this.clickLink("Verify Text");
+  }
 
-    async verifyButtonVisible() {
-        await expect(this.welcomeButton).toBeVisible();
-    }
+  async verifyButtonVisible() {
+    await expect(this.welcomeButton).toBeVisible();
+  }
 }

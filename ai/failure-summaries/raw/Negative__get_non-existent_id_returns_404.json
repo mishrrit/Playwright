@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Negative: get non-existent id returns 404",
+    "file": "C:\\projects\\Playwright\\api\\tests\\fakerest\\books.sanity.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nExpected value: \u001b[32m404\u001b[39m\nReceived value: \u001b[31m[Error: apiRequestContext.get: getaddrinfo ENOTFOUND api.dev.example.com\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - → GET https://api.dev.example.com/api/v1/Books/999999999\u001b[22m\u001b[39m\n\u001b[31m\u001b[2m    - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/26.8\u001b[22m\u001b[39m\n\u001b[31m\u001b[2m    - accept: application/json\u001b[22m\u001b[39m\n\u001b[31m\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\u001b[39m\n\u001b[31m\u001b[2m    - Content-Type: application/json\u001b[22m\u001b[39m\n\u001b[31m]\u001b[39m",
+      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mrejects\u001b[2m.\u001b[22mtoHaveProperty\u001b[2m(\u001b[22m\u001b[32mpath\u001b[39m\u001b[2m, \u001b[22m\u001b[32mvalue\u001b[39m\u001b[2m)\u001b[22m\n\nExpected path: \u001b[32m\"status\"\u001b[39m\nReceived path: \u001b[31m[]\u001b[39m\n\nExpected value: \u001b[32m404\u001b[39m\nReceived value: \u001b[31m[Error: apiRequestContext.get: getaddrinfo ENOTFOUND api.dev.example.com\u001b[39m\n\u001b[31mCall log:\u001b[39m\n\u001b[31m\u001b[2m  - → GET https://api.dev.example.com/api/v1/Books/999999999\u001b[22m\u001b[39m\n\u001b[31m\u001b[2m    - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/26.8\u001b[22m\u001b[39m\n\u001b[31m\u001b[2m    - accept: application/json\u001b[22m\u001b[39m\n\u001b[31m\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\u001b[39m\n\u001b[31m\u001b[2m    - Content-Type: application/json\u001b[22m\u001b[39m\n\u001b[31m]\u001b[39m\n    at C:\\projects\\Playwright\\api\\tests\\fakerest\\books.sanity.spec.ts:56:16"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\api-tests-fakerest-books.s-4dfee-non-existent-id-returns-404-api\\error-context.md"
+  ]
+}

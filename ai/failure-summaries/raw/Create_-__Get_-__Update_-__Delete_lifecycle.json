@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Create -> Get -> Update -> Delete lifecycle",
+    "file": "C:\\projects\\Playwright\\api\\tests\\fakerest\\books.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: HTTP 404 - {\"type\":\"https://tools.ietf.org/html/rfc7231#section-6.5.4\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-e4a239ba34f85a499da941cd3eb8c5da-f82bae736d920648-00\"}",
+      "stack": "Error: HTTP 404 - {\"type\":\"https://tools.ietf.org/html/rfc7231#section-6.5.4\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"00-e4a239ba34f85a499da941cd3eb8c5da-f82bae736d920648-00\"}\n    at FakeRestService.handleResponse (C:\\projects\\Playwright\\api\\base\\BaseAPI.ts:40:19)\n    at C:\\projects\\Playwright\\api\\tests\\fakerest\\books.spec.ts:28:20"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\api-tests-fakerest-books-F-94939---Update---Delete-lifecycle-api\\error-context.md"
+  ]
+}

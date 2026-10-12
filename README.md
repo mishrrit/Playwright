@@ -71,6 +71,27 @@ npx playwright test ui/tests/ui-testing-playground --project=ui-testing-playgrou
 npx playwright test api --project=api
 ```
 
+### Multiple API hosts
+
+Booking and FakeRest service fixtures automatically select separate hosts, including when both suites run in parallel. Configure each target in the ignored root `.env` file or CI environment:
+
+```dotenv
+BOOKING_API_BASE_URL=https://restful-booker.herokuapp.com
+FAKEREST_API_BASE_URL=https://fakerestapi.azurewebsites.net
+```
+
+These are also the defaults. `API_BASE_URL` remains available for generic API/UI callers, but no longer controls Booking or FakeRest service fixtures. Move existing suite-specific overrides to the corresponding named variable.
+
+Service endpoints stay relative, so changing a target URL automatically updates every request for that API. Optional gateway path prefixes are preserved. Future raw-request suites select a registered API once with `test.use({ apiTarget: "fakeRest" })` and use `apiRequest.get("api/v1/Books")`.
+
+See [API architecture and onboarding conventions](api/api_test_architecture.md#multiple-api-hosts-and-automatic-endpoint-routing) for credentials, additional APIs, and fixtures.
+
+Run the offline multi-host regression tests without public API access or global report cleanup:
+
+```powershell
+npx playwright test --config=api\config\framework.playwright.config.ts
+```
+
 ### Run with Options
 
 ```bash

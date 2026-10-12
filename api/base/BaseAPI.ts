@@ -1,5 +1,4 @@
 import { APIRequestContext, APIResponse } from "@playwright/test";
-import { API_CONFIG } from "../config/apiConfig";
 import { Logger } from "../utils/logger";
 
 /**
@@ -7,15 +6,23 @@ import { Logger } from "../utils/logger";
  */
 export abstract class BaseAPI {
   protected request: APIRequestContext;
-  protected baseUrl = API_CONFIG.baseUrl;
-  protected defaultHeaders = API_CONFIG.defaultHeaders;
+  // Defaults come from the selected request context; services may add overrides.
+  protected defaultHeaders: Record<string, string> = {};
 
   constructor(request: APIRequestContext) {
     this.request = request;
   }
 
   protected buildUrl(path: string) {
-    return `${this.baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+    const endpoint = path.trim();
+    if (
+      /^[a-z][a-z\d+.-]*:/i.test(endpoint) ||
+      endpoint.startsWith("//") ||
+      endpoint.includes("\\")
+    ) {
+      throw new Error("API endpoints must be relative to their configured host");
+    }
+    return endpoint.replace(/^\/+/, "");
   }
 
   protected async handleResponse(res: APIResponse) {

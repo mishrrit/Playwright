@@ -1,7 +1,11 @@
-import { faker } from "@faker-js/faker";
+function randomString(len = 8) {
+  return Math.random()
+    .toString(36)
+    .slice(2, 2 + len);
+}
 
 export const fakeUser = () => ({
-  email: faker.internet.email(),
-  fullName: `${faker.person.firstName()} ${faker.person.lastName()}`,
-  password: faker.internet.password(12),
+  email: `user.${randomString(6)}@example.com`,
+  fullName: `User ${randomString(6)}`,
+  password: randomString(12),
 });

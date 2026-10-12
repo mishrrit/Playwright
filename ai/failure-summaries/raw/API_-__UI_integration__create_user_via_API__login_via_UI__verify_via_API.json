@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "API -> UI integration: create user via API, login via UI, verify via API",
+    "file": "C:\\projects\\Playwright\\api\\api-ui.spec.ts"
+  },
+  "result": {
+    "status": "failed",
+    "error": {
+      "message": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND api.dev.example.com\nCall log:\n\u001b[2m  - → POST https://api.dev.example.com/users\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/26.8\u001b[22m\n\u001b[2m    - accept: application/json; v=1.0\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 85\u001b[22m\n",
+      "stack": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND api.dev.example.com\nCall log:\n\u001b[2m  - → POST https://api.dev.example.com/users\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/26.8\u001b[22m\n\u001b[2m    - accept: application/json; v=1.0\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - Content-Type: application/json\u001b[22m\n\u001b[2m    - content-length: 85\u001b[22m\n\n    at UserService.create (C:\\projects\\Playwright\\api\\services\\UserService.ts:12:36)\n    at fn (C:\\projects\\Playwright\\api\\api-ui.spec.ts:20:19)\n    at retry (C:\\projects\\Playwright\\api\\utils\\retry.ts:10:20)\n    at C:\\projects\\Playwright\\api\\api-ui.spec.ts:18:22"
+    }
+  },
+  "attachments": [
+    "C:\\projects\\Playwright\\test-results\\api-api-ui-API---UI-integr-09e55-login-via-UI-verify-via-API-api\\error-context.md"
+  ]
+}

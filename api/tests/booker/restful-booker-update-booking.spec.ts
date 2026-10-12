@@ -11,6 +11,7 @@
 */
 
 import { test, expect } from "../../fixtures/apiFixtures";
+import type { BookingService } from "../../services/BookingService";
 
 const initialBooking = {
   firstname: "Agent",
@@ -30,7 +31,7 @@ const updatedBooking = {
   additionalneeds: "Lunch",
 };
 
-async function getAuthToken(svc) {
+async function getAuthToken(svc: BookingService) {
   const { status, body } = await svc.auth("admin", "password123");
   if (status !== 200) throw new Error("auth failed");
   return (body as any).token;
