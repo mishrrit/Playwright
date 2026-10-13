@@ -1,6 +1,17 @@
 ﻿# Playwright Test Framework
 
-This workspace contains a Playwright-based end-to-end testing setup for web applications. The framework supports multiple test suites with Page Object Model architecture, custom fixtures, and multi-browser execution.
+Playwright-based **UI and API testing** with application-specific page objects, API service wrappers, reusable fixtures, and multi-browser execution.
+
+## Documentation
+
+| Guide | Use it for |
+| --- | --- |
+| [UI architecture](ui/ui_test_architecture.md) | Page inheritance, fixture lifecycle, UI workflow diagrams, and adding applications/tests |
+| [API architecture](api/api_test_architecture.md) | Service inheritance, named API routing, API workflow diagrams, and adding services/tests |
+| [Test plans](test-plans/README.md) | Scenario planning and test-plan conventions |
+| [AI failure summaries](ai/failure-summaries/README.md) | Failure-summary tooling and provider configuration |
+
+This README covers setup, execution, configuration, and reporting. Detailed class relationships and diagrams are maintained in the architecture guides.
 
 ## What's Included
 
@@ -8,68 +19,69 @@ This workspace contains a Playwright-based end-to-end testing setup for web appl
 - **Configured browser projects**: Chromium and Firefox where supported by the suite
 - **Page Object Model (POM)** architecture for maintainable tests
 - **Custom fixtures** for authentication and test setup
-- **HTML report generation** with screenshots, traces, and artifacts
+- **API service fixtures** with separate Booking and FakeRest hosts
+- **Allure reporting** and configurable Playwright diagnostics
+- **Local framework regression tests** for routing and assertion behavior
 - **Pre-configured base URLs** for demo applications
 
 ## Prerequisites
 
-- Node.js 18 or newer
-- npm
+- Node.js 24 LTS recommended (current Faker dependency requires Node 20.19+, 22.13+, 23.5+, or 24+ within its supported major ranges)
+- npm 10 or newer
+- Network access to the target demo APIs/websites for live tests
+- Java available on `PATH` when generating reports with `allure-commandline`
 
 ## Setup
 
-Install the project dependencies:
+From the repository root, restore dependencies and install the configured UI browsers:
 
-```bash
-npm install
+```powershell
+npm ci
+npx playwright install chromium firefox
 ```
 
-Install the browser binaries required by Playwright:
+API-only request tests do not require browser binaries. The optional VS Code **Playwright Test for VS Code** extension provides test discovery and debugging.
 
-```bash
-npx playwright install
+Before using direct Playwright commands with the root configuration, build the custom reporter:
+
+```powershell
+npm run build:ai
 ```
 
-Optional but recommended: install the VS Code extension "Playwright Test for VS Code".
+`npm test` runs this build automatically through its `pretest` script. Direct `npx playwright test` commands do not run npm lifecycle scripts.
 
 ## Running Tests
 
-Run all tests across all projects:
+Start with a selected suite rather than all projects. Live tests can create or modify demo data. The generic API/UI integration example also requires an application providing its expected endpoints and login page.
 
-```bash
-npm test
-# or
-npx playwright test
+```powershell
+# Discover tests without executing them
+npx playwright test --config=playwright.config.ts --list
+
+# Run every configured project (includes live UI/API tests)
+npm test -- --config=playwright.config.ts
 ```
 
 ### Run Specific Test Suites
 
-```bash
-# TodoMVC tests
-npm run test:todo-mvc
+```powershell
+# Select UI suites through their configured project names
+npx playwright test --config=playwright.config.ts --project=todo-mvc-chromium
+npx playwright test --config=playwright.config.ts --project=ui-testing-playground-firefox
+npx playwright test --config=playwright.config.ts --project=orange-hrm-chromium
+npx playwright test --config=playwright.config.ts --project=demo-web-shop-chromium
+npx playwright test --config=playwright.config.ts --project=practice-test-automation-chromium
+npx playwright test --config=playwright.config.ts --project=saucedemo-chromium
 
-# UI Testing Playground tests
-npm run test:ui-testing-playground
+# API suites: quoted regular expressions match Windows or Unix path separators
+npx playwright test --config=playwright.config.ts --project=api 'api[\\/]tests[\\/]booker'
+npx playwright test --config=playwright.config.ts --project=api 'api[\\/]tests[\\/]fakerest'
 
-# OrangeHRM tests
-npm run test:orange-hrm
-
-# Demo Web Shop tests
-npx playwright test ui/tests/demo-web-shop --project=demo-web-shop-chromium
-
-# Practice Test Automation tests
-npx playwright test ui/tests/practice-test-automation --project=practice-test-automation-chromium
-
-# SauceDemo tests
-npx playwright test ui/tests/saucedemo --project=saucedemo-chromium
-
-# UI Testing Playground Firefox tests
-npx playwright test ui/tests/ui-testing-playground --project=ui-testing-playground-firefox
-
-# API tests (Playwright request-based API suite)
-# Run only the API folder using the dedicated `api` project
-npx playwright test api --project=api
+# One scenario by title, within a selected project
+npx playwright test --config=playwright.config.ts --project=api --grep 'Activities smoke'
 ```
+
+Use `--config=playwright.config.ts` explicitly: the repository also contains an older JavaScript configuration.
 
 ### Multiple API hosts
 
@@ -82,7 +94,9 @@ FAKEREST_API_BASE_URL=https://fakerestapi.azurewebsites.net
 
 These are also the defaults. `API_BASE_URL` remains available for generic API/UI callers, but no longer controls Booking or FakeRest service fixtures. Move existing suite-specific overrides to the corresponding named variable.
 
-Service endpoints stay relative, so changing a target URL automatically updates every request for that API. Optional gateway path prefixes are preserved. Future raw-request suites select a registered API once with `test.use({ apiTarget: "fakeRest" })` and use `apiRequest.get("api/v1/Books")`.
+Service endpoints remain relative to their named host; optional gateway prefixes are preserved. FakeRest does **not persist writes**: its tests verify endpoint response contracts, not stored CRUD lifecycles. Credentials belong in environment/CI secrets, never committed data files.
+
+UI hosts are configured separately in [Playwright projects](playwright.config.ts). The root config does not currently enable dotenv loading for UI settings; changing an API host variable does not redirect a website.
 
 See [API architecture and onboarding conventions](api/api_test_architecture.md#multiple-api-hosts-and-automatic-endpoint-routing) for credentials, additional APIs, and fixtures.
 
@@ -92,174 +106,83 @@ Run the offline multi-host regression tests without public API access or global 
 npx playwright test --config=api\config\framework.playwright.config.ts
 ```
 
-### Run with Options
+### Interactive Running and Debugging
 
-```bash
-# Run in headed mode (visible browser)
-npm run test:headed
-
-# Run with Playwright UI mode
-npm run test:ui
-
-# Run specific browser project
-npx playwright test --project=todo-mvc-chromium
-npx playwright test --project=orange-hrm-chromium
-
-# Open HTML report after a run
-npm run test:report
-
-# Generate and open an Allure report manually when needed
-npx allure generate allure-results -o allure-report --clean
-npx allure open allure-report
+```powershell
+npx playwright test --config=playwright.config.ts --project=saucedemo-chromium --headed
+npx playwright test --config=playwright.config.ts --project=saucedemo-chromium --debug
+npx playwright test --config=playwright.config.ts --ui
 ```
 
-Every Playwright run automatically clears the previous `allure-results` data and
-generates a fresh report in `allure-report/` during global teardown, including
-single-test and filtered test runs.
+## Reports and Run Lifecycle
+
+1. `npm test` first runs cleanup and builds the AI reporter. Direct Playwright commands skip this npm preparation.
+2. Standard root-config runs validate test plans and clear run-scoped output, Allure results, and AI failure artifacts through global setup.
+3. Tests execute using their selected projects and fixtures; configured reporters produce line output, Allure results, and AI failure artifacts.
+4. Global teardown attempts to generate the Allure report. See the [AI tooling guide](ai/failure-summaries/README.md) for summary generation details.
+
+**Preserve any needed artifacts before rerunning.** Even filtered standard runs invoke global hooks. Avoid concurrent runs sharing these report directories. The dedicated offline framework configuration does not use the root cleanup/reporting hooks.
+
+```powershell
+# Open the Allure report produced by global teardown
+npx allure open allure-report
+
+# Regenerate manually when needed
+npx allure generate allure-results -o allure-report --clean
+
+# Opt into Playwright HTML reporting for a run
+npx playwright test --config=playwright.config.ts --project=saucedemo-chromium --reporter=line,html
+npx playwright show-report
+```
+
+The `--reporter` flag replaces the configured reporters for that run; the example above does not collect Allure/AI reporter output, while global hooks still execute. `npm run test:report` opens an existing Playwright HTML report; it does not generate one. HTML is not a default reporter.
+
+Traces are collected on the first retry. Automatic failure screenshots are not enabled by default; configure them explicitly when required.
 
 ## Project Structure
 
 ```text
 .
-├── playwright.config.ts          # Main Playwright configuration
-├── package.json                  # Dependencies and npm scripts
-├── ui/tests/                        # Test specifications
-│   ├── fixtures/                 # Custom Playwright fixtures
-│   │   └── orange-hrm.ts         # OrangeHRM login fixture
-│   ├── orange-hrm/               # OrangeHRM test specs (JavaScript)
-│   │   ├── add-delete-employee.spec.js
-│   │   └── testAddDeleteEmployee.spec.js
-│   ├── demo-web-shop/             # Demo Web Shop specs (TypeScript)
-│   ├── practice-test-automation/  # Practice Test Automation specs (TypeScript)
-│   ├── saucedemo/                 # SauceDemo specs (TypeScript)
-│   ├── todo-mvc/                 # TodoMVC test specs (TypeScript)
-│   │   ├── add-todos.spec.ts
-│   │   ├── annotations.spec.ts
-│   │   ├── seed.spec.ts
-│   │   ├── testCodeGen.spec.ts
-│   │   └── todo.spec.ts
-│   └── ui-testing-playground/    # UI Testing Playground specs (TypeScript)
-│       ├── ajax-data.spec.ts
-│       ├── class-attribute.spec.ts
-│       ├── click-event.spec.ts
-│       ├── client-side-delay.spec.ts
-│       ├── dynamic-id.spec.ts
-│       ├── dynamic-table.spec.ts
-│       ├── hidden-layers-click.spec.ts
-│       ├── hidden-layers-not-clickable.spec.ts
-│       ├── load-delay.spec.ts
-│       ├── mouse-over-button.spec.ts
-│       ├── mouse-over-link.spec.ts
-│       ├── non-breaking-space.spec.ts
-│       ├── overlapped-element.spec.ts
-│       ├── pom-refactored.spec.ts
-│       ├── progress-bar-start.spec.ts
-│       ├── progress-bar-stop.spec.ts
-│       ├── sample-app-enter.spec.ts
-│       ├── sample-app-login.spec.ts
-│       ├── scroll-bar.spec.ts
-│       ├── shadow-dom.spec.ts
-│       ├── text-input.spec.ts
-│       ├── verify-text.spec.ts
-│       ├── visibility-overlapped.spec.ts
-│       ├── visibility-removed.spec.ts
-│       └── visibility-zero-width.spec.ts
-├── ui/pages/                        # Page Objects (POM)
-│   ├── common/
-│   │   └── BasePage.ts           # Shared typed page foundation
-│   ├── demo-web-shop/             # Demo Web Shop page objects
-│   ├── practice-test-automation/ # Practice Test Automation page objects
-│   ├── saucedemo/                 # SauceDemo page objects
-│   ├── orange-hrm/               # OrangeHRM Page Objects (JavaScript)
-│   │   ├── BasePage.js           # Base page class
-│   │   ├── LoginPage.js          # Login page actions
-│   │   └── dashboard/
-│   │       └── pim/
-│   │           ├── AddEmployeePage.js    # Add employee actions
-│   │           └── EmployeeInfoPage.js   # Employee list/search/delete
-│   └── ui-testing-playground/  # UI Testing Playground Page Objects (TypeScript)
-│       ├── BasePage.ts
-│       ├── AjaxDataPage.ts
-│       ├── ClassAttributePage.ts
-│       ├── ClickEventPage.ts
-│       ├── ClientSideDelayPage.ts
-│       ├── DynamicIdPage.ts
-│       ├── DynamicTablePage.ts
-│       ├── HiddenLayersPage.ts
-│       ├── LoadDelayPage.ts
-│       ├── MouseOverPage.ts
-│       ├── NonBreakingSpacePage.ts
-│       ├── OverlappedElementPage.ts
-│       ├── ProgressBarPage.ts
-│       ├── SampleAppPage.ts
-│       ├── ScrollBarPage.ts
-│       ├── ShadowDomPage.ts
-│       ├── TextInputPage.ts
-│       ├── VerifyTextPage.ts
-│       └── VisibilityPage.ts
-├── ui/support/
-│   ├── fixtures/
-│   │   ├── base.ts               # Shared test and expect exports
-│   │   └── index.ts              # Fixture barrel export
-│   ├── global-setup/
-│   └── global-teardown/
-├── ui/test-data/                    # Feature-specific JSON test data
-│   ├── demo-web-shop/
-│   ├── practice-test-automation/
-│   ├── saucedemo/
-│   └── ui-testing-playground/
-├── test-plans/                   # Test plans and exploratory documentation
-├── .playwright-cli/              # Browser snapshots and console logs
-├── allure-results/               # Raw Allure test results
-├── allure-report/                # Generated Allure report
-├── playwright-report/            # Generated Playwright HTML report
-├── test-results/                 # Generated screenshots, traces, artifacts
+├── playwright.config.ts         Projects, browsers, hosts, reporters
+├── playwright-global-setup.ts   Test-plan validation and run setup
+├── package.json                 Dependencies and npm commands
+├── ui/                          UI pages, fixtures, data, and test suites
+├── api/                         API configuration, services, fixtures, and tests
+├── test-plans/                  Scenario plans and planning conventions
+├── scripts/                     Validation, cleanup, and tooling scripts
+├── ai/failure-summaries/        AI reporter and summary tooling
+├── allure-results/              Generated raw Allure results
+├── allure-report/               Generated Allure report
+├── playwright-report/           Optional generated Playwright HTML report
+├── test-results/                Generated test artifacts
 └── README.md
 ```
 
-## Framework Conventions
+For folder-level responsibilities, class relationships, and extension examples, use the [UI guide](ui/ui_test_architecture.md) or [API guide](api/api_test_architecture.md).
 
-- Import `test` and `expect` from `support/fixtures/base.ts` in TypeScript specs.
-- Keep application-specific locators and actions in `pages/<application>/`.
-- Extend `pages/common/BasePage.ts` for shared navigation and page helpers.
-- Keep assertions in test specs; page objects expose locators and actions.
-- Store reusable scenario values in `test-data/<application>/` JSON files.
-- Import JSON data with TypeScript `resolveJsonModule` support; keep secrets out of committed fixtures.
-- Keep each Playwright project’s `baseURL` and test scope in `playwright.config.ts`.
-- Prefer accessible locators and web-first assertions; avoid fixed timeouts.
-- Keep generated snapshots, traces, and reports in their configured output folders.
+## Adding or Maintaining Tests
+
+1. Define the scenario and expected application/API contract in the relevant [test plan](test-plans/README.md).
+2. Follow the [UI scaling guide](ui/ui_test_architecture.md#scaling-the-ui-framework) or [API scaling guide](api/api_test_architecture.md#scaling-where-to-make-changes); reuse the existing fixtures and page/service classes.
+3. Keep hosts configurable and secrets out of committed code/data. Add a new project or API target only when needed.
+4. Run the smallest affected suite, investigate failures, and preserve meaningful assertions. Do not skip tests or broaden expected statuses simply to obtain a pass.
+5. Update directly related documentation and keep generated reports out of source changes.
 
 ## Test Suites Overview
 
-| Suite | Application | Language | Test Files | Browser Projects |
-| ------- | ------------- | ---------- | ------------ | ------------------ |
-| **todo-mvc** | <https://demo.playwright.dev/todomvc> | TypeScript | 5 | Chromium, Firefox |
-| **ui-testing-playground** | <http://uitestingplayground.com> | TypeScript | 25 | Chromium, Firefox |
-| **demo-web-shop** | <https://demowebshop.tricentis.com> | TypeScript | 4 | Chromium |
-| **practice-test-automation** | <https://practicetestautomation.com/practice-test-login/> | TypeScript | 3 | Chromium |
-| **saucedemo** | <https://www.saucedemo.com> | TypeScript | 24 | Chromium |
-| **orange-hrm** | <https://opensource-demo.orangehrmlive.com> | JavaScript | 2 | Chromium |
+| Suite | Focus | Project(s) |
+| --- | --- | --- |
+| TodoMVC | Todo actions and filtering | `todo-mvc-chromium`, `todo-mvc-firefox` |
+| UI Testing Playground | Dynamic elements, waits, visibility, and interactions | `ui-testing-playground-chromium`, `ui-testing-playground-firefox` |
+| Demo Web Shop | Storefront scenarios | `demo-web-shop-chromium` |
+| Practice Test Automation | Positive and negative login | `practice-test-automation-chromium` |
+| SauceDemo | Login, products, cart, and checkout | `saucedemo-chromium` |
+| OrangeHRM | Employee UI scenarios; CommonJS page objects | `orange-hrm-chromium` |
+| Restful-Booker | Booking and authentication endpoints | `api` (filter `booker`) |
+| FakeRest | Books, authors, activities, covers, and users | `api` (filter `fakerest`) |
+| Framework regression | Local routing and assertion behavior | Dedicated offline config |
 
-### OrangeHRM Test Suite
-
-- Uses **Page Object Model** with JavaScript
-- Custom **login fixture** (`tests/fixtures/orange-hrm.ts`) handles authentication
-- Tests cover: Add Employee, Search Employee, Delete Employee
-- Base URL: `https://opensource-demo.orangehrmlive.com/web/index.php/auth/login`
-
-### UI Testing Playground
-
-- 25 test scenarios covering various UI challenges:
-  - Dynamic IDs, AJAX data, Client-side delays
-  - Hidden layers, Overlapped elements, Shadow DOM
-  - Progress bars, Scroll bars, Mouse interactions
-  - Visibility, Text verification, Non-breaking spaces
-
-### TodoMVC
-
-- Basic CRUD operations for todo items
-- Filtering (All/Active/Completed)
-- Annotations and seed data tests
+Use `--list` for current discovery counts rather than relying on a static file count.
 
 ## Configuration Highlights
 
@@ -268,55 +191,26 @@ single-test and filtered test runs.
 - **Parallel execution**: Enabled (`fullyParallel: true`)
 - **Retries**: 2 on CI, 0 locally
 - **Trace collection**: On first retry
-- **Screenshot diff tolerance**: 10 pixels / 10% pixel ratio
+- **Screenshot comparison tolerance**: `toHaveScreenshot.maxDiffPixels = 10`
+- **Snapshot comparison tolerance**: `toMatchSnapshot.maxDiffPixelRatio = 0.1`
 
-## Notes
+These are root defaults; individual projects/tests can override them. See [playwright.config.ts](playwright.config.ts) for the source of truth.
 
-- Test files follow the `*.spec.ts` (TypeScript) or `*.spec.js` (JavaScript) pattern
-- Suite-specific projects define application base URLs and browser coverage
-- The configured reporters write line output and Allure results; Playwright HTML output is available through the standard report commands
-- Page Objects are organized by application under `pages/`
-## Workflow
+## Troubleshooting
 
-The diagram below shows the core test-execution and reporting flow used by this repository (Playwright runner, reporters, AI failure-summaries generator, and Allure integration).
+- **No tests found:** select the TypeScript config and the correct project; inspect `--list` output. CLI file filters are regular expressions, so use the quoted patterns above on Windows.
+- **Custom reporter cannot load:** run `npm run build:ai` before a direct Playwright invocation. Check the build output if it fails.
+- **Tests stop before execution:** inspect the test-plan validator output from global setup; this is separate from an application assertion failure.
+- **No HTML report:** opt into the HTML reporter first; the default output is Allure, line, and AI reporting.
+- **Missing browser executable:** install the required browser with `npx playwright install chromium firefox`.
+- **Unexpected API 404:** check the named target and endpoint contract. FakeRest POST responses do not imply data was persisted.
 
-```mermaid
-flowchart LR
-  A["Test specs\n(tests/)"] --> B["Playwright Test Runner"]
-  B --> C["Reporters"]
-  C --> C1["Line Reporter"]
-  C --> C2["allure-playwright\n(allure-results/)"]
-  C --> C3["nl-failure-reporter\n(ai/failure-summaries/raw/)"]
-  C3 --> D["generate-summary (dist/generate-summary.js)\nai/failure-summaries/artifacts/ (.txt, .md)"]
-  D --> E["Copy .md & write attachment JSON\n(allure-results/)"]
-  B --> G["test-results/\n(screenshots, traces, artifacts)"]
-  E --> F["Allure Report\n(allure-report/)"]
-
-  subgraph Build_and_Cleanup
-    X["pretest -> clean:ai & build:ai (esbuild)"] --> B
-    Y["support/global-setup -> cleans previous run artifacts"] --> B
-  end
-
-  style A fill:#000,stroke:#fff,stroke-width:1px,color:#fff
-  style B fill:#000,stroke:#fff,stroke-width:1px,color:#fff
-  style C fill:#000,stroke:#fff,stroke-width:1px,color:#fff
-  style D fill:#000,stroke:#fff,stroke-width:1px,color:#fff
-  style E fill:#000,stroke:#fff,stroke-width:1px,color:#fff
-  style F fill:#000,stroke:#fff,stroke-width:1px,color:#fff
-  style G fill:#000,stroke:#fff,stroke-width:1px,color:#fff
-```
-
-## Reference
+## References
 
 - <https://playwright.dev/docs/intro>
 - <https://playwright.dev/docs/test-configuration>
 - <https://playwright.dev/docs/page-object-models>
-## Recent changes
 
-- **UI:** Consolidated fixtures under `ui/support/fixtures/`, created `ui/ui_test_architecture.md`, and updated tests to import fixtures from the new location.
-- **API:** Added `api/api_test_architecture.md` as the canonical agent reference for API tests and consolidated model schemas under `api/models/schemas/`.
-- **Models:** Removed the duplicate root `models/` folder; canonical models now live under `api/models/`. Created `ui/models/README.md` as a placeholder for future UI models.
-- **Tooling:** Workspace setting `todo-tree.ripgrep` was set to `C:\ProgramData\chocolatey\bin\rg.exe` to resolve the Todo-Tree ripgrep error.
 ## Maintainers / Contact
 
 - Ritesh Mishra
