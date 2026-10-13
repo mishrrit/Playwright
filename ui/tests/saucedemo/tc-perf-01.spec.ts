@@ -1,8 +1,8 @@
 import { test, expect } from "../../support/fixtures/base";
 import { LoginPage } from "../../pages/saucedemo/LoginPage";
-import users from "../../test-data/saucedemo/saucedemo_users.json";
+import { usersByKey } from "../../test-data/saucedemo/users";
 
-const perf = users.find((u: any) => u.username === "performance_glitch_user");
+const perf = usersByKey.perf;
 
 test("TC-PERF-01: performance_glitch_user - measure login latency and resilience", async ({
   page,

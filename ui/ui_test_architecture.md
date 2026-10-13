@@ -46,6 +46,23 @@ ui/
 
 There is no current `ui/selectors/` or `ui/helpers/` directory. Locators are encapsulated in page objects; executable fixtures and JSON data live in separate folders.
 
+### Canonical SauceDemo account data
+
+[users.json](./test-data/saucedemo/users.json) is the single account dataset. [users.ts](./test-data/saucedemo/users.ts) validates it and exports an immutable ordered array plus `usersByKey` for typed lookup. The duplicate `saucedemo_users.json` has been removed; all 17 data-consuming specs use the typed access module.
+
+```typescript
+import users, { usersByKey } from "../../test-data/saucedemo/users";
+
+const standard = usersByKey.standard;
+// Use users when generating a scenario for each account.
+```
+
+Account identity and credentials are separate from scenario expectations. [users.spec.ts](./tests/saucedemo/users.spec.ts) owns an exhaustive typed `loginExpectations` map. The `problem` account still requires the existing success/cart checks; it does not inherit the old duplicate dataset's unused `either` value. Other expectation branches and test names remain unchanged.
+
+For another supported account, update `USER_KEYS` and the canonical JSON, then supply the new scenario expectation where needed. Validation rejects missing/duplicate keys, duplicate usernames, unsupported keys, and empty credentials instead of silently selecting a fallback account. These values are public demo credentials; private environments must continue using environment/CI secrets.
+
+[Offline data regressions](../api/tests/framework/saucedemo-data.spec.ts) verify account identity, keyed access, immutability, and invalid-input handling. The lowercase page-object compatibility modules remain unchanged; they are re-exports rather than duplicate page implementations.
+
 ## Inheritance, imports, and composition
 
 ```mermaid
@@ -125,7 +142,7 @@ sequenceDiagram
 ```
 
 1. The selected project in [playwright.config.ts](../playwright.config.ts) determines `testMatch`, browser/device, viewport, and `baseURL`.
-2. Root [global setup](../playwright-global-setup.ts) validates test plans and delegates to the UI setup. That setup clears run-scoped reports/artifacts; even a filtered standard run can trigger this cleanup.
+2. Root [global setup](../playwright-global-setup.ts) validates test plans and directly invokes the UI setup. The UI setup calls [shared cleanup](../scripts/clean-ai.js) once to archive previous Allure results and reset AI artifacts. Playwright owns cleanup of each project's configured test output directory. Even filtered standard runs invoke setup; cleanup failures stop execution.
 3. A spec imports `test`/`expect` from [base.ts](./support/fixtures/base.ts), a page class, and any JSON test data.
 4. Playwright provides a fresh test-scoped browser context and page. The browser itself is normally worker-scoped and reused.
 5. The test constructs its page object. Constructing locators does not navigate or log in; the test must call the corresponding method.
@@ -332,7 +349,7 @@ Reporting and attachments
 
 - Follow [project reporter configuration](../playwright.config.ts). It currently enables traces on the first retry; a failure with no retry does not automatically produce that trace.
 - Configure `screenshot: "only-on-failure"` when screenshots are required; the root config does not currently enable automatic failure screenshots. Attach relevant diagnostics without exposing secrets.
-- Root setup clears run-scoped output, Allure results, and AI failure artifacts; global teardown attempts to generate the Allure report. Avoid concurrent runs that share those report directories.
+- Root setup uses shared cleanup to archive previous Allure results (default retention: 3, configurable through `ALLURE_KEEP_RUNS`) and reset AI failure artifacts. Playwright cleans configured test output directories; global teardown still attempts Allure generation. Avoid concurrent runs that share report directories. See [cleanup ownership](../ai/failure-summaries/README.md#cleanup-ownership-and-retention).
 
 Code style and linting
 

@@ -9,7 +9,7 @@ Playwright-based **UI and API testing** with application-specific page objects, 
 | [UI architecture](ui/ui_test_architecture.md) | Page inheritance, fixture lifecycle, UI workflow diagrams, and adding applications/tests |
 | [API architecture](api/api_test_architecture.md) | Service inheritance, named API routing, API workflow diagrams, and adding services/tests |
 | [Test plans](test-plans/README.md) | Scenario planning and test-plan conventions |
-| [AI failure summaries](ai/failure-summaries/README.md) | Failure-summary tooling and provider configuration |
+| [Failure summaries](ai/failure-summaries/README.md) | Local evidence summaries, per-attempt artifacts, and final test outcomes |
 
 This README covers setup, execution, configuration, and reporting. Detailed class relationships and diagrams are maintained in the architecture guides.
 
@@ -41,6 +41,8 @@ npx playwright install chromium firefox
 ```
 
 API-only request tests do not require browser binaries. The optional VS Code **Playwright Test for VS Code** extension provides test discovery and debugging.
+
+Build tooling and schema validation use declared, lockfile-pinned esbuild and Ajv dependencies. `allure-commandline` is the single Allure CLI; `allure-playwright` remains the reporter adapter.
 
 Before using direct Playwright commands with the root configuration, build the custom reporter:
 
@@ -81,7 +83,7 @@ npx playwright test --config=playwright.config.ts --project=api 'api[\\/]tests[\
 npx playwright test --config=playwright.config.ts --project=api --grep 'Activities smoke'
 ```
 
-Use `--config=playwright.config.ts` explicitly: the repository also contains an older JavaScript configuration.
+[playwright.config.ts](playwright.config.ts) is the canonical root configuration. The obsolete emitted JavaScript configuration has been removed; [tsconfig.json](tsconfig.json) sets `noEmit: true` so typechecking does not recreate it. The explicit reporter build still writes its intended compiled output.
 
 ### Multiple API hosts
 
@@ -100,10 +102,10 @@ UI hosts are configured separately in [Playwright projects](playwright.config.ts
 
 See [API architecture and onboarding conventions](api/api_test_architecture.md#multiple-api-hosts-and-automatic-endpoint-routing) for credentials, additional APIs, and fixtures.
 
-Run the offline multi-host regression tests without public API access or global report cleanup:
+Run the offline framework regressions without public API access or global report cleanup. The npm command first builds the reporter required by the reporting tests:
 
 ```powershell
-npx playwright test --config=api\config\framework.playwright.config.ts
+npm run test:framework
 ```
 
 ### Interactive Running and Debugging
@@ -116,12 +118,14 @@ npx playwright test --config=playwright.config.ts --ui
 
 ## Reports and Run Lifecycle
 
-1. `npm test` first runs cleanup and builds the AI reporter. Direct Playwright commands skip this npm preparation.
-2. Standard root-config runs validate test plans and clear run-scoped output, Allure results, and AI failure artifacts through global setup.
-3. Tests execute using their selected projects and fixtures; configured reporters produce line output, Allure results, and AI failure artifacts.
+1. `npm test` builds the reporter in `pretest`; it no longer performs a separate cleanup. Direct Playwright commands still require a prior reporter build.
+2. Standard root-config runs validate test plans and invoke shared cleanup once: previous Allure results are archived, then current AI artifact directories are reset. Playwright itself cleans the configured test output directories.
+3. Tests execute using their selected projects and fixtures; reporters produce line output, Allure results, and local evidence summaries for failed/timed-out attempts. Run-specific artifacts and a final outcome index distinguish retry failures from flaky or expected outcomes; no AI model is called.
 4. Global teardown attempts to generate the Allure report. See the [AI tooling guide](ai/failure-summaries/README.md) for summary generation details.
 
-**Preserve any needed artifacts before rerunning.** Even filtered standard runs invoke global hooks. Avoid concurrent runs sharing these report directories. The dedicated offline framework configuration does not use the root cleanup/reporting hooks.
+**Preserve any needed artifacts before rerunning.** Even filtered standard runs invoke global hooks. Allure archive retention defaults to 3 runs and can be set with `ALLURE_KEEP_RUNS`; `0` keeps none. Cleanup errors stop setup. `npm run clean:ai` remains an explicit manual option, not a required pre-test step. See [cleanup ownership and retention](ai/failure-summaries/README.md#cleanup-ownership-and-retention).
+
+Summary formatting runs in-process; no child process is started per failure. Avoid concurrent runs sharing report directories. The offline framework configuration does not apply root cleanup to this workspace; its cleanup regressions use temporary repositories.
 
 ```powershell
 # Open the Allure report produced by global teardown
@@ -160,10 +164,29 @@ Traces are collected on the first retry. Automatic failure screenshots are not e
 
 For folder-level responsibilities, class relationships, and extension examples, use the [UI guide](ui/ui_test_architecture.md) or [API guide](api/api_test_architecture.md).
 
+## Repository Hygiene
+
+- Track source, configuration, intentional fixtures, and the dependency lockfile—not installed dependencies or per-run reports.
+- Installed dependencies, raw failure artifacts, generated summaries, and generated HTML reports are excluded from Git tracking. Local copies are retained; use `npm ci` to restore dependencies in a fresh checkout.
+- [Compiled reporter output](ai/failure-summaries/dist/) remains tracked for direct Playwright/VS Code loading. Rebuild it after reporter source changes. [Intentional sample data](ai/failure-summaries/fixtures/sample-artifact.json) stays separate from runtime artifacts.
+- Existing diagnostic notes and repair history are retained. Ignoring/untracking current artifacts does not remove them from earlier Git commits.
+- Use targeted ignore rules; JavaScript is legitimate source in parts of this framework. [.gitattributes](.gitattributes) continues to control text normalization, not generated-file retention.
+
+## Continuous Integration
+
+[Playwright CI](.github/workflows/playwright.yml) uses Node 24 in all jobs:
+
+1. **Validation:** restore locked dependencies, typecheck with `npx tsc` (no emission), then run `npm run test:framework`. Its pre-script builds the reporter once; this job does not run public application tests or install browsers.
+2. **Live matrix:** after validation passes, run API service suites and the existing SauceDemo Chromium suite in separate jobs. API selection excludes `api/tests/framework/`, so offline regressions are not repeated. Other configured UI suites remain available through local/project commands; this matrix does not claim full UI-project coverage.
+3. **Provisioning:** install Chromium and Linux system dependencies only for the UI job. Both live jobs provision Java for the selected Allure CLI and build their own reporter through `npm test` preparation.
+4. **Artifacts:** upload actual Allure results/report, test output, and failure-summary directories under unique matrix artifact names. The workflow does not assume that a Playwright HTML report exists. Matrix failure does not automatically cancel the other suite.
+
+Live-result retention is 30 days; offline failure artifacts are retained for 7 days. Live suites still require available target services and correct API-specific environment settings.
+
 ## Adding or Maintaining Tests
 
 1. Define the scenario and expected application/API contract in the relevant [test plan](test-plans/README.md).
-2. Follow the [UI scaling guide](ui/ui_test_architecture.md#scaling-the-ui-framework) or [API scaling guide](api/api_test_architecture.md#scaling-where-to-make-changes); reuse the existing fixtures and page/service classes.
+2. Follow the [UI scaling guide](ui/ui_test_architecture.md#scaling-the-ui-framework) or [API scaling guide](api/api_test_architecture.md#scaling-where-to-make-changes); reuse the existing fixtures and page/service classes. FakeRest Books uses one `booksService`; SauceDemo account consumers use the [typed canonical dataset](ui/test-data/saucedemo/users.ts), with scenario expectations kept in tests.
 3. Keep hosts configurable and secrets out of committed code/data. Add a new project or API target only when needed.
 4. Run the smallest affected suite, investigate failures, and preserve meaningful assertions. Do not skip tests or broaden expected statuses simply to obtain a pass.
 5. Update directly related documentation and keep generated reports out of source changes.

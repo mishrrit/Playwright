@@ -66,4 +66,9 @@ playwright.env
 
 #failure-summaries
 *.txt
+/ai/failure-summaries/raw/
+/ai/failure-summaries/artifacts/
+
+# Obsolete emitted config; playwright.config.ts is canonical
+/playwright.config.js
 

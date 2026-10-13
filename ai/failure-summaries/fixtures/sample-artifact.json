@@ -1,0 +1,16 @@
+{
+  "test": {
+    "title": "Example API contract failure",
+    "project": "api"
+  },
+  "result": {
+    "status": "failed",
+    "retry": 0,
+    "expectedStatus": "passed",
+    "error": {
+      "message": "Expected HTTP 200; received HTTP 404",
+      "stack": "Error: Expected HTTP 200; received HTTP 404"
+    }
+  },
+  "attachments": []
+}

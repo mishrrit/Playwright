@@ -56,7 +56,6 @@ classDiagram
     BaseAPI <|-- CoverPhotosService
     BaseAPI <|-- ActivitiesService
     BaseAPI <|-- UsersService
-    BaseAPI <|-- FakeRestService
     BaseAPI <|-- AuthService
     BaseAPI <|-- UserService
     BaseAPI --> APIRequestContext : stores injected context
@@ -79,6 +78,20 @@ classDiagram
 - DTO interfaces are compile-time types, not runtime response validation; tests must still assert fields or validate schemas.
 
 Do not confuse [UserService.ts](./services/UserService.ts) (`/users`, generic application) with [UsersService.ts](./services/UsersService.ts) (`/api/v1/Users`, FakeRest).
+
+### Canonical Books service
+
+[BooksService.ts](./services/BooksService.ts), exposed through `booksService`, owns all FakeRest Books operations. The duplicate `FakeRestService` class and `fakeRestService` fixture have been removed after migrating their repository consumers. The named target `fakeRest` and request fixture `fakeRestApiRequest` remain unchanged.
+
+| Former method | Canonical method |
+| --- | --- |
+| `listBooks()` | `list()` |
+| `createBook(payload)` | `create(payload)` |
+| `getBook(id)` | `getById(id)` |
+| `updateBook(id, payload)` | `update(id, payload)` |
+| `deleteBook(id)` | `delete(id)` |
+
+Migrated callers now use the existing Books service's write convention: serialized JSON with `Content-Type: application/json; v=1.0`. Request paths, payload fields, response parsing, and HTTP-error behavior are unchanged. Local routing regressions verify both POST and PUT headers/bodies; live Books tests retain all six former wrapper scenarios, including malformed input and boundary values. This consolidation removes duplicate implementation, not test coverage.
 
 ## Dependency and execution workflow
 
@@ -252,7 +265,7 @@ npx playwright test --config=api\config\framework.playwright.config.ts
 npx playwright test --config=playwright.config.ts --project=api 'api[\\/]tests[\\/]orders'
 ```
 
-The standard project run invokes repository global setup/teardown, including report cleanup. The framework runner uses local test servers and does not invoke that cleanup.
+The standard project run invokes repository global setup/teardown. Shared cleanup archives previous Allure results and resets AI artifacts once, while Playwright owns test output cleanup. See [cleanup ownership and retention](../ai/failure-summaries/README.md#cleanup-ownership-and-retention). The framework runner uses local fixtures; its cleanup regressions target temporary repositories rather than real report directories. Run `npm run test:framework` to build the reporter before exercising the full framework suite.
 
 ### Guardrails for new suites
 
@@ -295,7 +308,7 @@ Use [apiFixtures.ts](./fixtures/apiFixtures.ts) and [APIClient.ts](./APIClient.t
 | API target | Host variable | Default host | Service fixtures |
 | --- | --- | --- | --- |
 | `booking` | `BOOKING_API_BASE_URL` | `https://restful-booker.herokuapp.com` | `bookingService` |
-| `fakeRest` | `FAKEREST_API_BASE_URL` | `https://fakerestapi.azurewebsites.net` | `fakeRestService`, `booksService`, `authorsService`, `coverPhotosService`, `activitiesService`, `usersService` |
+| `fakeRest` | `FAKEREST_API_BASE_URL` | `https://fakerestapi.azurewebsites.net` | `booksService`, `authorsService`, `coverPhotosService`, `activitiesService`, `usersService` |
 | `default` | `API_BASE_URL` | `https://api.dev.example.com` | Generic `apiRequest`, `authService`, API/UI integration |
 
 Set these variables in the ignored root `.env` file or your CI environment. `NODE_ENV` remains environment metadata; supply the appropriate host variables for each environment. It does not discover hostnames or select an environment file.

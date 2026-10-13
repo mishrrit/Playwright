@@ -146,14 +146,14 @@ test("rejects unknown targets instead of using another host", () => {
 });
 
 test("all service fixtures select the right host and preserve base path prefixes", async ({
-  bookingService, fakeRestService, booksService, authorsService,
+  bookingService, booksService, authorsService,
   coverPhotosService, activitiesService, usersService,
 }) => {
   const results = await Promise.all([
-    bookingService!.list(), fakeRestService!.listBooks(), booksService!.list(),
+    bookingService!.list(), booksService!.list(),
     authorsService!.list(), coverPhotosService!.list(), activitiesService!.list(), usersService!.list(),
   ]);
-  const paths = ["/gateway/booking", "/proxy/api/v1/Books", "/proxy/api/v1/Books",
+  const paths = ["/gateway/booking", "/proxy/api/v1/Books",
     "/proxy/api/v1/Authors", "/proxy/api/v1/CoverPhotos", "/proxy/api/v1/Activities", "/proxy/api/v1/Users"];
   results.forEach((result, index) => {
     const name = index === 0 ? "booking" : "fakeRest";
@@ -182,6 +182,12 @@ test("relative CRUD endpoints preserve payloads and per-request headers", async 
     const result = await run();
     expect(result.body).toMatchObject({ method, path,
       data: ["POST", "PUT", "PATCH"].includes(method) ? payload : null });
+    if (path.startsWith("/proxy/api/v1/Books") && ["POST", "PUT"].includes(method)) {
+      expect(result.body).toMatchObject({ headers: {
+        "content-type": "application/json; v=1.0",
+        "x-api-service": "fakeRest",
+      } });
+    }
   }
   const updated = await bookingService!.update(7, payload, "test-token");
   expect(updated.body).toMatchObject({ headers: { cookie: "token=test-token", "x-api-service": "booking" } });
@@ -215,8 +221,12 @@ test.describe("explicit target for future raw-request suites", () => {
   });
 });
 
-test("service errors retain their HTTP status", async ({ bookingService }) => {
+test("service errors retain their HTTP status", async ({ bookingService, booksService }) => {
   await expect(bookingService!.getById(404)).rejects.toHaveProperty("status", 404);
+  await expect(booksService!.getById(404)).rejects.toMatchObject({
+    status: 404,
+    body: { server: "fakeRest", path: "/proxy/api/v1/Books/404" },
+  });
 });
 
 test("service endpoints cannot hardcode another host", async ({ apiRequest }) => {

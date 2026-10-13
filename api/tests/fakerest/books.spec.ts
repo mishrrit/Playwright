@@ -2,14 +2,14 @@ import { test, expect } from "../../fixtures/apiFixtures";
 import { verifyResourceContract, expectValidationError } from "./contractAssertions";
 
 test.describe("FakeRest API - Books", () => {
-  test("List books returns array", async ({ fakeRestService }) => {
-    const { status, body } = await fakeRestService!.listBooks();
+  test("List books returns array", async ({ booksService }) => {
+    const { status, body } = await booksService!.list();
     expect(status).toBe(200);
     expect(Array.isArray(body)).toBeTruthy();
   });
 
   test("Non-persistent create/read/update/delete endpoint contracts", async ({
-    fakeRestService,
+    booksService,
   }) => {
     const book = {
       id: 0,
@@ -20,33 +20,26 @@ test.describe("FakeRest API - Books", () => {
       publishDate: new Date().toISOString(),
     };
 
-    const service = fakeRestService!;
-    await verifyResourceContract({
-      list: () => service.listBooks(),
-      create: (data) => service.createBook(data),
-      getById: (id) => service.getBook(id),
-      update: (id, data) => service.updateBook(id, data),
-      delete: (id) => service.deleteBook(id),
-    }, book, { title: "Updated Title" });
+    await verifyResourceContract(booksService!, book, { title: "Updated Title" });
   });
 
-  test("Get non-existent book returns 404", async ({ fakeRestService }) => {
+  test("Get non-existent book returns 404", async ({ booksService }) => {
     const id = 9999999;
     await expect(async () => {
-      await fakeRestService!.getBook(id);
+      await booksService!.getById(id);
     }).rejects.toHaveProperty("status", 404);
   });
 
   test("Create with invalid pageCount returns a 400 validation error", async ({
-    fakeRestService,
+    booksService,
   }) => {
     await expectValidationError(
-      fakeRestService!.createBook({ pageCount: "not-a-number" }),
+      booksService!.create({ pageCount: "not-a-number" }),
       "pageCount",
     );
   });
 
-  test("Edge: create very large title", async ({ fakeRestService }) => {
+  test("Edge: create very large title", async ({ booksService }) => {
     const book = {
       id: 0,
       title: "x".repeat(2000),
@@ -55,13 +48,13 @@ test.describe("FakeRest API - Books", () => {
       excerpt: "",
       publishDate: new Date().toISOString(),
     };
-    const res = await fakeRestService!.createBook(book);
+    const res = await booksService!.create(book);
     expect(res.status).toBe(200);
     const created = res.body as any;
-    await fakeRestService!.deleteBook(created.id);
+    await booksService!.delete(created.id);
   });
 
-  test("Edge: boundary pageCount values", async ({ fakeRestService }) => {
+  test("Edge: boundary pageCount values", async ({ booksService }) => {
     const zero = {
       id: 0,
       title: "Zero",
@@ -78,11 +71,11 @@ test.describe("FakeRest API - Books", () => {
       excerpt: "",
       publishDate: new Date().toISOString(),
     };
-    const zr = await fakeRestService!.createBook(zero as any);
+    const zr = await booksService!.create(zero as any);
     expect(zr.status).toBe(200);
-    await fakeRestService!.deleteBook((zr.body as any).id);
-    const hr = await fakeRestService!.createBook(high as any);
+    await booksService!.delete((zr.body as any).id);
+    const hr = await booksService!.create(high as any);
     expect(hr.status).toBe(200);
-    await fakeRestService!.deleteBook((hr.body as any).id);
+    await booksService!.delete((hr.body as any).id);
   });
 });

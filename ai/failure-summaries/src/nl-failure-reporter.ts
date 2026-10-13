@@ -1,148 +1,132 @@
-import fs from "fs";
-import path from "path";
-import { spawnSync } from "child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { createHash, randomUUID } from "node:crypto";
+import type { Reporter, TestCase, TestResult } from "@playwright/test/reporter";
+import { summarize } from "./generate-summary";
 
-class NlFailureReporter {
-  options: any;
-  outDir: string;
-  constructor(options?: any) {
-    this.options = options || {};
-    this.outDir = this.options.outDir || path.resolve(__dirname, "..", "raw");
-    if (!fs.existsSync(this.outDir))
-      fs.mkdirSync(this.outDir, { recursive: true });
+interface ReporterOptions {
+  outDir?: string;
+  artifactsDir?: string;
+  allureResultsDir?: string | false;
+}
+
+class NlFailureReporter implements Reporter {
+  readonly runId = randomUUID();
+  readonly outDir: string;
+  readonly artifactsDir: string;
+  private readonly allureResultsDir: string | false;
+  private readonly attempts: Array<{
+    test: TestCase;
+    artifact: string;
+    status: TestResult["status"];
+    retry: number;
+  }> = [];
+
+  constructor(options: ReporterOptions = {}) {
+    this.outDir = path.resolve(options.outDir ?? path.join(__dirname, "..", "raw"), this.runId);
+    this.artifactsDir = path.resolve(options.artifactsDir ?? path.join(__dirname, "..", "artifacts"), this.runId);
+    this.allureResultsDir = options.allureResultsDir === false
+      ? false
+      : path.resolve(options.allureResultsDir ?? "allure-results");
   }
 
-  async onTestEnd(test: any, result: any) {
+  onTestEnd(test: TestCase, result: TestResult): void {
+    if (result.status !== "failed" && result.status !== "timedOut") return;
     try {
-      if (result.status === "failed") {
-        const safeName = String(test.title || test.name || "test")
-          .replace(/[^a-z0-9\-_\.]/gi, "_")
-          .slice(0, 200);
-        const artifactPath = path.join(this.outDir, `${safeName}.json`);
-        const artifact = {
-          test: {
-            title: test.title,
-            file: test.location && test.location.file,
-          },
-          result: {
-            status: result.status,
-            error: result.error && {
-              message: result.error.message,
-              stack: result.error.stack,
-            },
-          },
-          attachments: (result.attachments || [])
-            .map((a: any) => a.path || a.name)
-            .filter(Boolean),
-        };
-        fs.writeFileSync(artifactPath, JSON.stringify(artifact, null, 2));
+      fs.mkdirSync(this.outDir, { recursive: true });
+      fs.mkdirSync(this.artifactsDir, { recursive: true });
+      const project = test.parent.project()?.name ?? "";
+      const identity = JSON.stringify([test.id, project, test.location, test.titlePath(), test.repeatEachIndex]);
+      const hash = createHash("sha256").update(identity).digest("hex").slice(0, 20);
+      const title = test.title.replace(/[^a-z0-9_-]/gi, "_").slice(0, 60) || "test";
+      const safeName = `${title}-${hash}-retry-${result.retry}`;
+      const artifactPath = path.join(this.outDir, `${safeName}.json`);
+      const attachments = result.attachments
+        .flatMap((attachment) => attachment.path ? [path.resolve(attachment.path)] : []);
+      const artifact = {
+        runId: this.runId,
+        test: {
+          id: test.id,
+          title: test.title,
+          titlePath: test.titlePath(),
+          project,
+          file: test.location.file,
+          line: test.location.line,
+          column: test.location.column,
+          repeatEachIndex: test.repeatEachIndex,
+        },
+        result: {
+          scope: "attempt",
+          status: result.status,
+          retry: result.retry,
+          expectedStatus: test.expectedStatus,
+          duration: result.duration,
+          error: result.error,
+          errors: result.errors,
+        },
+        attachments,
+        attachmentMetadata: result.attachments.map(({ name, contentType, path: file }) => ({
+          name, contentType, path: file,
+        })),
+      };
+      fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
+      this.attempts.push({ test, artifact: path.basename(artifactPath), status: result.status, retry: result.retry });
 
-        // Call compiled generator in dist folder
-        const generator = path.resolve(__dirname, "generate-summary.js");
-        let spawnRes: any;
-        if (fs.existsSync(generator)) {
-          spawnRes = spawnSync("node", [generator, artifactPath], {
-            encoding: "utf8",
-          });
-        } else {
-          console.error("No compiled generator found at", generator);
-          return;
-        }
-        const summaryText =
-          spawnRes.status === 0
-            ? spawnRes.stdout
-            : `Failed to generate summary: ${spawnRes.stderr}`;
+      const summary = summarize(artifact);
+      fs.writeFileSync(path.join(this.artifactsDir, `${safeName}-nl-summary.txt`), `${summary}\n`, "utf8");
+      const fence = "`".repeat(Math.max(3, ...[...summary.matchAll(/`+/g)].map((match) => match[0].length + 1)));
+      const writeMarkdown = (directory: string, filename: string) => {
+        const links = attachments.map((file) => {
+          const relative = path.relative(directory, file).split(path.sep).join("/");
+          const href = encodeURI(relative).replace(/\(/g, "%28").replace(/\)/g, "%29");
+          const label = path.basename(file).replace(/[\[\]]/g, "_");
+          return `- [${label}](${href})`;
+        });
+        const markdown = [
+          `# ${test.title.replace(/[\r\n]/g, " ")}`,
+          "", `**Attempt status:** ${result.status}; **retry index:** ${result.retry}`,
+          "", "Final test outcome is recorded in the raw run directory's run-index.json.",
+          "", "## Recorded evidence", "", `${fence}text`, summary, fence,
+          "", "## Attachments", "", ...links, "",
+        ].join("\n");
+        fs.writeFileSync(path.join(directory, filename), markdown, "utf8");
+      };
+      writeMarkdown(this.artifactsDir, `${safeName}-nl-summary.md`);
 
-        // write summary next to artifacts in failure-summaries/artifacts
-        const artifactsDir = path.resolve(__dirname, "..", "artifacts");
-        if (!fs.existsSync(artifactsDir))
-          fs.mkdirSync(artifactsDir, { recursive: true });
-        const summaryPath = path.join(
-          artifactsDir,
-          `${safeName}-nl-summary.txt`,
-        );
-        fs.writeFileSync(summaryPath, summaryText, "utf8");
-
-        // Also write a Markdown version and copy to test-results and allure-results
-        const md = [] as string[];
-        md.push(`# ${artifact.test.title || safeName}`);
-        md.push("");
-        md.push(`**Status:** ${artifact.result.status}`);
-        md.push("");
-        md.push("## Summary");
-        md.push("");
-        md.push("```text");
-        md.push(summaryText.trim());
-        md.push("```");
-        md.push("");
-        md.push("## Attachments");
-        md.push("");
-        for (const a of artifact.attachments || []) {
-          const rel = path.relative(process.cwd(), a);
-          md.push(`- [${path.basename(a)}](${rel})`);
-        }
-        md.push("");
-        md.push("## Probable cause");
-        md.push("");
-        md.push("- Flaky timing or missing wait (auto-detected)");
-        md.push("");
-        md.push("## Suggested fix");
-        md.push("");
-        md.push(
-          "- Add `await page.waitForSelector(...)` or increase timeout for the failing step.",
-        );
-
-        const mdContent = md.join("\n");
-        const mdPath = path.join(artifactsDir, `${safeName}-nl-summary.md`);
-        fs.writeFileSync(mdPath, mdContent, "utf8");
-
-        // copy to first attachment's directory (Playwright test-results folder) so it's colocated with error context
-        if (artifact.attachments && artifact.attachments.length) {
-          try {
-            const attachDir = path.dirname(artifact.attachments[0]);
-            const target = path.join(attachDir, `${safeName}-nl-summary.md`);
-            fs.writeFileSync(target, mdContent, "utf8");
-          } catch (e) {
-            // ignore copy errors
-          }
-        }
-
-        // also copy to allure-results root so it can be consumed by Allure tooling
+      // External copies need the run ID too because their directories are shared.
+      const copyName = `${this.runId}-${safeName}-nl-summary.md`;
+      const firstAttachment = attachments.find((file) => fs.existsSync(file));
+      const copyDirectories = new Set<string>();
+      if (firstAttachment) copyDirectories.add(path.dirname(firstAttachment));
+      if (this.allureResultsDir && fs.existsSync(this.allureResultsDir)) {
+        copyDirectories.add(this.allureResultsDir);
+      }
+      for (const directory of copyDirectories) {
         try {
-          const allureDir = path.resolve(process.cwd(), "allure-results");
-          if (fs.existsSync(allureDir)) {
-            const target = path.join(allureDir, `${safeName}-nl-summary.md`);
-            fs.writeFileSync(target, mdContent, "utf8");
-            // emit a small Allure attachment descriptor JSON so the file can be linked in results
-            // Note: Allure test result JSONs must reference attachments to show them inline; this descriptor
-            // serves as a lightweight attachment record that some workflows consume.
-            try {
-              const attachmentDescriptor = {
-                name: `${safeName}-nl-summary.md`,
-                type: "text/markdown",
-                source: `${safeName}-nl-summary.md`,
-              };
-              const descPath = path.join(
-                allureDir,
-                `${safeName}-nl-summary-attachment.json`,
-              );
-              fs.writeFileSync(
-                descPath,
-                JSON.stringify(attachmentDescriptor, null, 2),
-                "utf8",
-              );
-            } catch (e) {
-              // ignore descriptor write errors
-            }
-          }
-        } catch (e) {
-          // ignore
+          writeMarkdown(directory, copyName);
+        } catch (error) {
+          console.error("NlFailureReporter: could not copy summary:", error);
         }
       }
-    } catch (err) {
-      console.error("NlFailureReporter error:", err);
+    } catch (error) {
+      console.error("NlFailureReporter error:", error);
+    }
+  }
+
+  onEnd(): void {
+    if (!this.attempts.length) return;
+    try {
+      const attempts = this.attempts.map(({ test, ...attempt }) => ({
+        ...attempt,
+        testId: test.id,
+        project: test.parent.project()?.name ?? "",
+        finalOutcome: test.outcome(),
+      }));
+      fs.writeFileSync(path.join(this.outDir, "run-index.json"), `${JSON.stringify({ runId: this.runId, attempts }, null, 2)}\n`);
+    } catch (error) {
+      console.error("NlFailureReporter: could not write final outcomes:", error);
     }
   }
 }
 
-module.exports = NlFailureReporter as any;
+export = NlFailureReporter;

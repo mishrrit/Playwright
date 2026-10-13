@@ -6,56 +6,81 @@ on:
   pull_request:
     branches: [main, master]
 
-jobs:
-  build_and_test:
-    name: Build AI helpers and clear all artifacts prior run
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Use Node.js 18
-        uses: actions/setup-node@v5
-        with:
-          node-version: 18
-      - name: Install dependencies
-        run: npm ci
-      - name: Build AI helpers
-        run: npm run build:ai
-      - name: Run tests
-        run: npm test
-        env:
-          CI: true
+permissions:
+  contents: read
 
-  playwright:
-    name: Playwright Tests (matrix)
-    needs: build_and_test
-    timeout-minutes: 60
+env:
+  CI: true
+
+jobs:
+  validate:
+    name: Typecheck and offline framework tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - name: API
-            path: api
-            project: api
-          - name: UI
-            path: ui
-            project: saucedemo-chromium
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: lts/*
+          node-version: '24'
+          cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-      - name: Run Playwright tests
-        run: |
-          npx playwright test ${{ matrix.path }} --project=${{ matrix.project }} --reporter=line,allure-playwright
-          # rename the default Playwright report folder to a matrix-specific folder
-          if [ -d "playwright-report" ]; then mv playwright-report "playwright-report-${{ matrix.name }}"; fi
+      - name: Typecheck without emitting JavaScript
+        run: npx tsc
+      - name: Build reporter and run offline tests
+        run: npm run test:framework
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: framework-test-results
+          path: test-results/api-framework/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  playwright:
+    name: Playwright Tests (${{ matrix.name }})
+    needs: validate
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: API
+            test-filter: 'api[\\/]tests[\\/](?!framework[\\/])'
+            project: api
+            browser: none
+          - name: UI
+            test-filter: 'ui[\\/]tests[\\/]saucedemo'
+            project: saucedemo-chromium
+            browser: chromium
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Set up Java for the Allure CLI
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install required UI browser and system dependencies
+        if: matrix.browser != 'none'
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Build reporter and run selected live suite
+        run: npm test -- --config=playwright.config.ts --project=${{ matrix.project }} '${{ matrix.test-filter }}'
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.name }}
-          path: playwright-report-${{ matrix.name }}/
+          name: playwright-results-${{ matrix.name }}
+          path: |
+            allure-results/
+            allure-report/
+            test-results/
+            ai/failure-summaries/raw/
+            ai/failure-summaries/artifacts/
+          if-no-files-found: warn
           retention-days: 30

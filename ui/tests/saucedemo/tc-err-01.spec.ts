@@ -1,8 +1,8 @@
 import { test, expect } from "../../support/fixtures/base";
 import { LoginPage } from "../../pages/saucedemo/LoginPage";
-import users from "../../test-data/saucedemo/saucedemo_users.json";
+import { usersByKey } from "../../test-data/saucedemo/users";
 
-const errUser = users.find((u: any) => u.username === "error_user")!;
+const errUser = usersByKey.error;
 
 test("TC-ERR-01: error_user - resilient error handling", async ({ page }) => {
   const login = new LoginPage(page);

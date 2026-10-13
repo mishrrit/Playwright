@@ -1,9 +1,9 @@
 import { test, expect } from "../../support/fixtures/base";
 import { LoginPage } from "../../pages/saucedemo/login.page";
 import { ProductsPage } from "../../pages/saucedemo/products.page";
-import users from "../../test-data/saucedemo/saucedemo_users.json";
+import { usersByKey } from "../../test-data/saucedemo/users";
 
-const standard = users.find((u: any) => u.key === "standard");
+const standard = usersByKey.standard;
 
 test("TC-STD-04: Sorting and product details behave normally", async ({
   page,

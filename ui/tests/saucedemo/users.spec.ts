@@ -2,13 +2,23 @@ import { test, expect } from "../../support/fixtures/base";
 import { LoginPage } from "../../pages/saucedemo/LoginPage";
 import { ProductsPage } from "../../pages/saucedemo/ProductsPage";
 import { CartPage } from "../../pages/saucedemo/CartPage";
-import users from "../../test-data/saucedemo/users.json";
+import users, { type UserKey } from "../../test-data/saucedemo/users";
+
+type LoginExpectation = "success" | "locked" | "performance" | "either" | "visual";
+const loginExpectations: Record<UserKey, LoginExpectation> = {
+  standard: "success",
+  locked: "locked",
+  problem: "success",
+  perf: "performance",
+  error: "either",
+  visual: "visual",
+};
 
 test.describe("SauceDemo - Users", () => {
-  for (const u of users as Array<any>) {
+  for (const u of users) {
     const username = u.username;
     const password = u.password;
-    const expected = u.expected;
+    const expected = loginExpectations[u.key];
 
     test(`${username} - login flow`, async ({ page }) => {
       const login = new LoginPage(page);

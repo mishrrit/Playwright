@@ -1,8 +1,8 @@
 [
-  { "username": "standard_user", "password": "secret_sauce", "expected": "success" },
-  { "username": "locked_out_user", "password": "secret_sauce", "expected": "locked" },
-  { "username": "problem_user", "password": "secret_sauce", "expected": "success" },
-  { "username": "performance_glitch_user", "password": "secret_sauce", "expected": "performance" },
-  { "username": "error_user", "password": "secret_sauce", "expected": "either" },
-  { "username": "visual_user", "password": "secret_sauce", "expected": "visual" }
+  { "key": "standard", "username": "standard_user", "password": "secret_sauce" },
+  { "key": "locked", "username": "locked_out_user", "password": "secret_sauce" },
+  { "key": "problem", "username": "problem_user", "password": "secret_sauce" },
+  { "key": "perf", "username": "performance_glitch_user", "password": "secret_sauce" },
+  { "key": "error", "username": "error_user", "password": "secret_sauce" },
+  { "key": "visual", "username": "visual_user", "password": "secret_sauce" }
 ]

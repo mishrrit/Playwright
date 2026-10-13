@@ -14,7 +14,6 @@ type Fixtures = {
   authService: AuthService;
   authToken?: string;
   bookingService?: import("../services/BookingService").BookingService;
-  fakeRestService?: import("../services/FakeRestService").FakeRestService;
   booksService?: import("../services/BooksService").BooksService;
   authorsService?: import("../services/AuthorsService").AuthorsService;
   coverPhotosService?: import("../services/CoverPhotosService").CoverPhotosService;
@@ -78,11 +77,6 @@ export const test = base.extend<Fixtures>({
   bookingService: async ({ bookingApiRequest }, use) => {
     const { BookingService } = await import("../services/BookingService.js");
     await use(new BookingService(bookingApiRequest));
-  },
-
-  fakeRestService: async ({ fakeRestApiRequest }, use) => {
-    const { FakeRestService } = await import("../services/FakeRestService.js");
-    await use(new FakeRestService(fakeRestApiRequest));
   },
 
   booksService: async ({ fakeRestApiRequest }, use) => {

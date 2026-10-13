@@ -1,9 +1,9 @@
 import { test, expect } from "../../support/fixtures/base";
 import { LoginPage } from "../../pages/saucedemo/LoginPage";
 import { ProductsPage } from "../../pages/saucedemo/ProductsPage";
-import users from "../../test-data/saucedemo/saucedemo_users.json";
+import { usersByKey } from "../../test-data/saucedemo/users";
 
-const prob = users.find((u: any) => u.username === "problem_user");
+const prob = usersByKey.problem;
 
 test("TC-PROB-01: problem_user - product data consistency checks", async ({
   page,

@@ -1,8 +1,8 @@
 import { test, expect } from "../../support/fixtures/base";
 import { LoginPage } from "../../pages/saucedemo/login.page";
-import users from "../../test-data/saucedemo/saucedemo_users.json";
+import { usersByKey } from "../../test-data/saucedemo/users";
 
-const visual = users.find((u: any) => u.key === "visual");
+const visual = usersByKey.visual;
 
 test("TC-VIS-02: Product cards layout snapshot", async ({ page }) => {
   const login = new LoginPage(page);

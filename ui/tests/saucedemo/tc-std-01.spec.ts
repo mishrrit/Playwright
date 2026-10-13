@@ -2,9 +2,9 @@ import { test, expect } from "../../support/fixtures/base";
 import { LoginPage } from "../../pages/saucedemo/LoginPage";
 import { ProductsPage } from "../../pages/saucedemo/ProductsPage";
 import { CartPage } from "../../pages/saucedemo/CartPage";
-import users from "../../test-data/saucedemo/saucedemo_users.json";
+import { usersByKey } from "../../test-data/saucedemo/users";
 
-const standard = users.find((u: any) => u.key === "standard");
+const standard = usersByKey.standard;
 if (!standard) {
   throw new Error('Test data user "standard" was not found');
 }

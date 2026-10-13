@@ -4,11 +4,11 @@
     "@playwright/cli": "^0.1.19",
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.2.0",
-    "allure": "^3.17.0",
-    "allure-commandline": "^2.46.1",
+    "ajv": "8.20.0",
+    "allure-commandline": "2.46.1",
     "allure-playwright": "^3.12.1",
     "dotenv": "^18.0.5",
-    "ts-node": "^10.9.1",
+    "esbuild": "0.28.2",
     "typescript": "^7.0.2"
   },
   "scripts": {
@@ -21,11 +21,15 @@
     "test:orange-hrm": "playwright test tests/orange-hrm",
     "test:saucedemo": "playwright test tests/saucedemo",
     "test:saucedemo:update-snapshots": "playwright test tests/saucedemo --update-snapshots",
-    "build:ai": "npx esbuild ai/failure-summaries/src/*.ts --platform=node --target=node16 --outdir=ai/failure-summaries/dist",
+    "build:ai": "esbuild ai/failure-summaries/src/*.ts --platform=node --format=cjs --target=node20 --outdir=ai/failure-summaries/dist",
     "clean:ai": "node scripts/clean-ai.js",
-    "pretest": "npm run clean:ai && npm run build:ai",
-    "ai:gen-summary": "npx ts-node ai/failure-summaries/src/generate-summary.ts",
-    "ai:reporter-sample": "npx ts-node ai/failure-summaries/src/generate-summary.ts ai/failure-summaries/raw/sample-artifact2.json"
+    "pretest": "npm run build:ai",
+    "preai:gen-summary": "npm run build:ai",
+    "ai:gen-summary": "node ai/failure-summaries/dist/generate-summary.js",
+    "preai:reporter-sample": "npm run build:ai",
+    "ai:reporter-sample": "node ai/failure-summaries/dist/generate-summary.js ai/failure-summaries/fixtures/sample-artifact.json",
+    "pretest:framework": "npm run build:ai",
+    "test:framework": "playwright test --config=api/config/framework.playwright.config.ts"
   },
   "dependencies": {
     "playwright": "^1.62.1"

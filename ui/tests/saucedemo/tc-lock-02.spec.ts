@@ -1,9 +1,6 @@
 import { test, expect } from "../../support/fixtures/base";
 import { LoginPage } from "../../pages/saucedemo/login.page";
-import usersData from "../../test-data/saucedemo/saucedemo_users.json";
-const users = Object.fromEntries(
-  (usersData as any[]).map((u: any) => [u.key, u]),
-);
+import { usersByKey as users } from "../../test-data/saucedemo/users";
 
 test("TC-LOCK-02: Locked out user cannot proceed to checkout", async ({
   page,

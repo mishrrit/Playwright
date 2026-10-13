@@ -1,122 +1,119 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
+const { randomUUID } = require("node:crypto");
 
-function safeRm(p) {
-  const repoRoot = path.resolve(process.cwd());
-  const resolved = path.resolve(process.cwd(), p);
-  if (
-    !resolved.startsWith(repoRoot) ||
-    resolved === path.parse(resolved).root
-  ) {
-    console.warn("[clean-ai] refusing to remove unsafe path:", resolved);
-    return;
-  }
+const ARCHIVE_NAME = /^allure-results-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z(?:-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?$/;
+
+function existingStat(file) {
   try {
-    if (fs.existsSync(resolved)) {
-      fs.rmSync(resolved, { recursive: true, force: true });
-    }
-    fs.mkdirSync(resolved, { recursive: true });
-    console.log("[clean-ai] cleaned", resolved);
-  } catch (e) {
-    console.error("[clean-ai] error cleaning", resolved, e);
-    process.exitCode = 1;
+    return fs.lstatSync(file);
+  } catch (error) {
+    if (error.code === "ENOENT") return undefined;
+    throw error;
   }
 }
 
-function rotateAllureResults(
-  srcDir = "allure-results",
-  archiveDir = "allure-archive",
-  keep = 3,
-) {
-  const repoRoot = path.resolve(process.cwd());
-  const resolvedSrc = path.resolve(process.cwd(), srcDir);
-  if (!resolvedSrc.startsWith(repoRoot)) {
-    console.warn("[clean-ai] refusing to operate on unsafe path:", resolvedSrc);
-    return;
+function assertDirectoryPath(root, directory) {
+  const relative = path.relative(root, directory);
+  if (!relative || relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error(`Refusing unsafe cleanup path: ${directory}`);
+  }
+  let current = root;
+  for (const part of relative.split(path.sep)) {
+    current = path.join(current, part);
+    const stat = existingStat(current);
+    if (!stat) continue;
+    if (stat.isSymbolicLink()) throw new Error(`Refusing cleanup through a symlink: ${current}`);
+    if (!stat.isDirectory()) throw new Error(`Expected cleanup directory: ${current}`);
+  }
+}
+
+function assertNoLinks(directory) {
+  if (!existingStat(directory)) return;
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const child = path.join(directory, entry.name);
+    if (entry.isSymbolicLink()) throw new Error(`Refusing cleanup of a symlink: ${child}`);
+    if (entry.isDirectory()) assertNoLinks(child);
+  }
+}
+
+/** @param {import('./clean-ai').CleanupOptions} [options] */
+function cleanRunArtifacts(options = {}) {
+  const root = path.resolve(options.rootDir ?? process.cwd());
+  if (root === path.parse(root).root) throw new Error("Refusing cleanup at a filesystem root");
+  // Check the root and its ancestors as well as managed paths (junctions count as links).
+  let ancestor = root;
+  while (ancestor !== path.parse(ancestor).root) {
+    const stat = fs.lstatSync(ancestor);
+    if (stat.isSymbolicLink()) throw new Error(`Refusing cleanup through a symlink: ${ancestor}`);
+    if (!stat.isDirectory()) throw new Error(`Expected root directory: ${ancestor}`);
+    ancestor = path.dirname(ancestor);
   }
 
-  if (!fs.existsSync(resolvedSrc)) {
-    fs.mkdirSync(resolvedSrc, { recursive: true });
-    console.log("[clean-ai] created", resolvedSrc);
-    return;
-  }
-
-  // if directory is empty, just recreate and return
-  const entries = fs.readdirSync(resolvedSrc);
-  if (entries.length === 0) {
-    console.log("[clean-ai] no previous allure-results to archive");
-    return;
-  }
-
-  // prepare archive dir
-  const resolvedArchive = path.resolve(process.cwd(), archiveDir);
-  fs.mkdirSync(resolvedArchive, { recursive: true });
-
-  // move current allure-results to timestamped archive folder
-  const ts = new Date().toISOString().replace(/[:.]/g, "-");
-  const dest = path.join(resolvedArchive, `allure-results-${ts}`);
-  try {
-    fs.renameSync(resolvedSrc, dest);
-    console.log(`[clean-ai] archived ${srcDir} -> ${dest}`);
-  } catch (e) {
-    console.error("[clean-ai] error archiving allure-results", e);
-    process.exitCode = 1;
-    return;
-  }
-
-  // recreate empty srcDir
-  try {
-    fs.mkdirSync(resolvedSrc, { recursive: true });
-    console.log("[clean-ai] recreated", resolvedSrc);
-  } catch (e) {
-    console.error("[clean-ai] error recreating", resolvedSrc, e);
-    process.exitCode = 1;
-  }
-
-  // prune old archives, keep the most recent `keep` folders
-  const archives = fs
-    .readdirSync(resolvedArchive)
-    .map((name) => ({
-      name,
-      path: path.join(resolvedArchive, name),
-      stat: fs.statSync(path.join(resolvedArchive, name)),
-    }))
-    .sort((a, b) => b.stat.mtimeMs - a.stat.mtimeMs);
-
-  const toRemove = archives.slice(keep);
-  for (const a of toRemove) {
-    try {
-      fs.rmSync(a.path, { recursive: true, force: true });
-      console.log("[clean-ai] removed old archive", a.path);
-    } catch (e) {
-      console.error("[clean-ai] error removing old archive", a.path, e);
+  const warnings = [];
+  const configuredKeep = options.keepRuns ?? process.env.ALLURE_KEEP_RUNS;
+  let keepRuns = 3;
+  if (configuredKeep !== undefined && configuredKeep !== "") {
+    const value = String(configuredKeep).trim();
+    if (/^\d+$/.test(value) && Number.isSafeInteger(Number(value))) {
+      keepRuns = Number(value);
+    } else {
+      warnings.push(`Invalid ALLURE_KEEP_RUNS='${configuredKeep}', using default 3`);
     }
   }
+
+  const directories = ["ai/failure-summaries/raw", "ai/failure-summaries/artifacts"];
+  if (options.includeTestResults !== false) directories.push("test-results");
+  const cleaned = directories.map((directory) => path.resolve(root, directory));
+  const results = path.join(root, "allure-results");
+  const archiveRoot = path.join(root, "allure-archive");
+  for (const directory of [...cleaned, results, archiveRoot]) assertDirectoryPath(root, directory);
+  for (const directory of [...cleaned, results]) assertNoLinks(directory);
+
+  const archives = [];
+  if (existingStat(archiveRoot)) {
+    for (const entry of fs.readdirSync(archiveRoot, { withFileTypes: true })) {
+      if (!ARCHIVE_NAME.test(entry.name)) continue;
+      const directory = path.join(archiveRoot, entry.name);
+      if (entry.isSymbolicLink()) throw new Error(`Refusing archive symlink: ${directory}`);
+      if (!entry.isDirectory()) continue;
+      assertDirectoryPath(root, directory);
+      assertNoLinks(directory);
+      archives.push(directory);
+    }
+  }
+  archives.sort((a, b) => path.basename(b).localeCompare(path.basename(a)));
+
+  // Preserve previous results before deleting any current-run artifacts.
+  let archivedTo;
+  if (existingStat(results) && fs.readdirSync(results).length) {
+    fs.mkdirSync(archiveRoot, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    archivedTo = path.join(archiveRoot, `allure-results-${stamp}-${randomUUID()}`);
+    fs.renameSync(results, archivedTo);
+    archives.unshift(archivedTo);
+  }
+  fs.mkdirSync(results, { recursive: true });
+  for (const directory of cleaned) {
+    fs.rmSync(directory, { recursive: true, force: true });
+    fs.mkdirSync(directory, { recursive: true });
+  }
+  const removedArchives = archives.slice(keepRuns);
+  for (const directory of removedArchives) fs.rmSync(directory, { recursive: true });
+
+  return { cleaned, archivedTo, removedArchives, keepRuns, warnings };
 }
 
-// directories to clean (except allure-results which we rotate)
-const dirs = [
-  "test-results",
-  // 'allure-results' handled separately
-  "ai/failure-summaries/raw",
-  "ai/failure-summaries/artifacts",
-];
+module.exports = { cleanRunArtifacts };
 
-for (const d of dirs) safeRm(d);
-
-// rotate allure-results keeping N past runs (default 3). Controlled via ALLURE_KEEP_RUNS env var.
-const keepEnv = process.env.ALLURE_KEEP_RUNS;
-let keep = 3;
-if (keepEnv) {
-  const parsed = parseInt(keepEnv, 10);
-  if (!Number.isNaN(parsed) && parsed >= 0) {
-    keep = parsed;
-  } else {
-    console.warn(
-      `[clean-ai] invalid ALLURE_KEEP_RUNS='${keepEnv}', using default ${keep}`,
-    );
+if (require.main === module) {
+  try {
+    const result = cleanRunArtifacts();
+    for (const warning of result.warnings) console.warn(`[clean-ai] ${warning}`);
+    if (result.archivedTo) console.log("[clean-ai] archived previous results:", result.archivedTo);
+    console.log(`[clean-ai] cleaned ${result.cleaned.length} directories; retained at most ${result.keepRuns} Allure archives`);
+  } catch (error) {
+    console.error("[clean-ai] cleanup failed:", error);
+    process.exitCode = 1;
   }
 }
-rotateAllureResults("allure-results", "allure-archive", keep);
-
-console.log(`clean-ai finished (kept ${keep} allure archives)`);
