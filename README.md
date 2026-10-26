@@ -6,6 +6,8 @@ Playwright-based **UI and API testing** with application-specific page objects, 
 
 | Guide | Use it for |
 | --- | --- |
+| [Framework flow](flow.md) | Follow test execution through fixtures, classes, methods, assertions, and reports |
+| [Decision log](decision.md) | Understand existing design choices and record important refactoring/testing decisions |
 | [UI architecture](ui/ui_test_architecture.md) | Page inheritance, fixture lifecycle, UI workflow diagrams, and adding applications/tests |
 | [API architecture](api/api_test_architecture.md) | Service inheritance, named API routing, API workflow diagrams, and adding services/tests |
 | [Test plans](test-plans/README.md) | Scenario planning and test-plan conventions |
