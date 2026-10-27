@@ -1,4 +1,4 @@
-import { test, expect } from "../../support/fixtures/base";
+import { test, expect } from "../../support/fixtures/anonymous";
 import { LoginPage } from "../../pages/saucedemo/LoginPage";
 import { ProductsPage } from "../../pages/saucedemo/ProductsPage";
 import { CartPage } from "../../pages/saucedemo/CartPage";
@@ -38,7 +38,7 @@ test.describe("SauceDemo - Users", () => {
 
       if (expected === "performance") {
         // performance_glitch_user: allow slower responses but assert eventual products load
-        await expect(page.locator(".inventory_list")).toBeVisible({
+        await expect(products.inventoryList).toBeVisible({
           timeout: 15000,
         });
         test.info().annotations.push({
@@ -51,7 +51,7 @@ test.describe("SauceDemo - Users", () => {
 
       if (expected === "visual") {
         // visual_user: capture a screenshot for visual inspection
-        await expect(page.locator(".inventory_list")).toBeVisible();
+        await expect(products.inventoryList).toBeVisible();
         await page.screenshot({
           path: `test-results/saucedemo-${username}-products.png`,
           fullPage: true,
@@ -66,14 +66,14 @@ test.describe("SauceDemo - Users", () => {
           expect(err.length).toBeGreaterThan(0);
           return;
         }
-        await expect(page.locator(".inventory_list")).toBeVisible({
+        await expect(products.inventoryList).toBeVisible({
           timeout: 10000,
         });
         return;
       }
 
       // default: success
-      await expect(page.locator(".inventory_list")).toBeVisible({
+      await expect(products.inventoryList).toBeVisible({
         timeout: 10000,
       });
 
@@ -82,20 +82,15 @@ test.describe("SauceDemo - Users", () => {
       const cart = new CartPage(page);
 
       // add first product
-      const firstProductName = await page
-        .locator(".inventory_item_name")
-        .first()
-        .innerText();
+      const firstProductName = await productsPage.productNameAt(0).innerText();
       await productsPage.addToCartByName(firstProductName);
       const count = await productsPage.getCartCount();
       expect(count).toBeGreaterThan(0);
 
       // open cart and ensure item is present
       await cart.gotoCart();
-      await expect(page.locator(".cart_list")).toBeVisible();
-      await expect(
-        page.locator(".cart_item .inventory_item_name"),
-      ).toContainText(firstProductName);
+      await expect(cart.cartList).toBeVisible();
+      await expect(cart.productNames).toContainText(firstProductName);
     });
   }
 });

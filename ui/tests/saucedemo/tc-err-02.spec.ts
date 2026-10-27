@@ -1,5 +1,6 @@
-import { test, expect } from "../../support/fixtures/base";
-import { LoginPage } from "../../pages/saucedemo/login.page";
+import { test, expect } from "../../support/fixtures/anonymous";
+import { LoginPage } from "../../pages/saucedemo/LoginPage";
+import { ProductsPage } from "../../pages/saucedemo/ProductsPage";
 import { usersByKey as users } from "../../test-data/saucedemo/users";
 
 test("TC-ERR-02: Attempt product operations -> verify graceful error handling", async ({
@@ -9,17 +10,18 @@ test("TC-ERR-02: Attempt product operations -> verify graceful error handling", 
   await login.goto();
   await login.login(users.error.username, users.error.password);
 
-  await expect(page.locator(".inventory_list")).toBeVisible({
+  const products = new ProductsPage(page);
+  await expect(products.inventoryList).toBeVisible({
     timeout: 10000,
   });
 
-  await page.click(".inventory_item .btn_inventory");
+  await products.addFirstProductToCart();
 
-  const hasError = await page.locator('[data-test="error"]').isVisible();
-  const cartVisible = await page.locator(".shopping_cart_link").isVisible();
+  const hasError = await login.errorContainer.isVisible();
+  const cartVisible = await products.cartLink.isVisible();
 
   expect(hasError || cartVisible).toBeTruthy();
   if (hasError) {
-    await expect(page.locator('[data-test="error"]')).not.toHaveText("");
+    await expect(login.errorContainer).not.toHaveText("");
   }
 });

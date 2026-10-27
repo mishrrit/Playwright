@@ -59,6 +59,7 @@ sequenceDiagram
     participant Login as LoginPage
     participant Products as ProductsPage
     participant Cart as CartPage
+    participant Checkout as CheckoutPage
     participant Page as Shared browser Page
     Runner->>Spec: Inject built-in page fixture
     Spec->>Login: new LoginPage(page)
@@ -71,8 +72,10 @@ sequenceDiagram
     Spec->>Cart: new CartPage(page)
     Spec->>Cart: gotoCart(), proceedToCheckout()
     Cart->>Page: Click cart and checkout
-    Spec->>Page: Fill checkout details, continue, finish
-    Spec->>Page: Assert confirmation text
+    Spec->>Checkout: new CheckoutPage(page)
+    Spec->>Checkout: fillInfo(), finish()
+    Checkout->>Page: Fill checkout details, continue, finish
+    Spec->>Checkout: Assert completionMessage text
     Runner->>Page: Dispose test context after teardown
 ```
 
@@ -80,17 +83,18 @@ sequenceDiagram
 
 | Layer | Actual behavior in this example |
 | --- | --- |
-| [UI fixture exports](ui/support/fixtures/base.ts) | Re-export Playwright `test`, `expect`, and the `Page` type. No automatic login or page-object construction. |
+| [Anonymous UI fixture](ui/support/fixtures/anonymous.ts) | Supplies empty storage state so this login scenario does not inherit the standard-user session. No automatic login or page-object construction. |
 | [Typed account data](ui/test-data/saucedemo/users.ts) | Supplies `usersByKey.standard` from the canonical validated dataset. |
 | Test body | Creates page objects, selects a product, orchestrates checkout, and asserts observable results. |
 | [LoginPage](ui/pages/saucedemo/LoginPage.ts) | Constructor stores locators. `goto()` delegates to `super.goto("/")`; `login()` fills username/password and clicks login. |
 | [ProductsPage](ui/pages/saucedemo/ProductsPage.ts) | `getTitleText()` reads text; `addToCartByName()` clicks within a matching product; `getCartCount()` reads the badge. |
 | [CartPage](ui/pages/saucedemo/CartPage.ts) | `gotoCart()` clicks the cart link; `proceedToCheckout()` clicks checkout. |
+| [CheckoutPage](ui/pages/saucedemo/CheckoutPage.ts) | `fillInfo()` enters details and continues; `finish()` submits; `completionMessage` exposes the confirmation locator. |
 | [BasePage](ui/pages/common/BasePage.ts) | Stores the injected `Page`; provides `goto(path)` and `expectVisible(locator)`. |
 
-All three page objects use the **same browser tab**, not three independent pages. Constructors define references/locators; actions occur when methods are called and awaited.
+All four page objects use the **same browser tab**, not four independent pages. Constructors define references/locators; actions occur when methods are called and awaited.
 
-This particular test still performs checkout field interactions directly through `page`. A [CheckoutPage](ui/pages/saucedemo/checkout.page.ts) exists, but this scenario does not instantiate it. The guide deliberately preserves that distinction.
+SauceDemo tests use page-object locators and actions throughout, including checkout. Selector definitions stay in [pages/saucedemo](ui/pages/saucedemo/); assertions and expected values remain in specs.
 
 ### Inheritance is not fixture injection
 
@@ -99,6 +103,7 @@ classDiagram
     BasePage <|-- LoginPage
     BasePage <|-- ProductsPage
     BasePage <|-- CartPage
+    BasePage <|-- CheckoutPage
     BasePage --> Page : stores injected instance
     class BasePage {
         goto(path)

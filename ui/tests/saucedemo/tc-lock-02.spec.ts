@@ -1,5 +1,5 @@
-import { test, expect } from "../../support/fixtures/base";
-import { LoginPage } from "../../pages/saucedemo/login.page";
+import { test, expect } from "../../support/fixtures/anonymous";
+import { LoginPage } from "../../pages/saucedemo/LoginPage";
 import { usersByKey as users } from "../../test-data/saucedemo/users";
 
 test("TC-LOCK-02: Locked out user cannot proceed to checkout", async ({
@@ -8,7 +8,7 @@ test("TC-LOCK-02: Locked out user cannot proceed to checkout", async ({
   const login = new LoginPage(page);
   await login.goto();
   await login.login(users.locked.username, users.locked.password);
-  const err = await page.locator('[data-test="error"]').innerText();
+  const err = await login.errorContainer.innerText();
   expect(err.toLowerCase()).toContain("locked");
   // should remain on login page
   await expect(page).toHaveURL(/saucedemo\.com/);

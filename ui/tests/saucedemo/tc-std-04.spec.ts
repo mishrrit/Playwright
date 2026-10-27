@@ -1,24 +1,17 @@
 import { test, expect } from "../../support/fixtures/base";
-import { LoginPage } from "../../pages/saucedemo/login.page";
-import { ProductsPage } from "../../pages/saucedemo/products.page";
-import { usersByKey } from "../../test-data/saucedemo/users";
-
-const standard = usersByKey.standard;
+import { ProductsPage } from "../../pages/saucedemo/ProductsPage";
+import { ProductDetailsPage } from "../../pages/saucedemo/ProductDetailsPage";
 
 test("TC-STD-04: Sorting and product details behave normally", async ({
   page,
 }) => {
-  const login = new LoginPage(page);
   const products = new ProductsPage(page);
-  await login.goto();
-  if (!standard) {
-    throw new Error("Standard user not found");
-  }
-  await login.login(standard.username, standard.password);
-  await expect(page.locator(products.inventory)).toBeVisible();
+  await page.goto("/inventory.html");
+  await expect(products.inventoryList).toBeVisible();
   // Open first product details and return
-  await page.locator(products.productNames).first().click();
-  await expect(page.locator(".inventory_details_name")).toBeVisible();
-  await page.click('button[name="back-to-products"], button:has-text("Back")');
-  await expect(page.locator(products.inventory)).toBeVisible();
+  await products.productNameAt(0).click();
+  const details = new ProductDetailsPage(page);
+  await expect(details.name).toBeVisible();
+  await details.backToProducts();
+  await expect(products.inventoryList).toBeVisible();
 });

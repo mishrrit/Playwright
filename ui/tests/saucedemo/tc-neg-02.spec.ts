@@ -1,5 +1,5 @@
-import { test, expect } from "../../support/fixtures/base";
-import { LoginPage } from "../../pages/saucedemo/login.page";
+import { test, expect } from "../../support/fixtures/anonymous";
+import { LoginPage } from "../../pages/saucedemo/LoginPage";
 
 test("TC-NEG-02: Long username/password inputs -> app handles without crashing", async ({
   page,
@@ -10,6 +10,6 @@ test("TC-NEG-02: Long username/password inputs -> app handles without crashing",
   await login.login(long, long);
 
   await expect(page).toHaveURL(/saucedemo\.com/);
-  await expect(page.locator('[data-test="error"]')).toBeVisible();
-  await expect(page.locator('[data-test="error"]')).not.toHaveText("");
+  await expect(login.errorContainer).toBeVisible();
+  await expect(login.errorContainer).not.toHaveText("");
 });

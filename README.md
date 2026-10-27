@@ -87,6 +87,33 @@ npx playwright test --config=playwright.config.ts --project=api --grep 'Activiti
 
 [playwright.config.ts](playwright.config.ts) is the canonical root configuration. The obsolete emitted JavaScript configuration has been removed; [tsconfig.json](tsconfig.json) sets `noEmit: true` so typechecking does not recreate it. The explicit reporter build still writes its intended compiled output.
 
+### Web application storage state
+
+Every UI project in [playwright.config.ts](playwright.config.ts) has a matching `<project>-setup` dependency. [Storage setup](ui/support/storage-state/storage.setup.ts) runs once per selected browser project, starts with an empty context, and regenerates its ignored `playwright/.auth/<project>.json` file before dependent tests run. API projects have no storage-state dependency. A failed setup blocks its dependent tests rather than falling back to stale authentication.
+
+| Application | Saved baseline |
+| --- | --- |
+| OrangeHRM | Authenticated demo administrator; the `login` fixture opens the dashboard without logging in again |
+| SauceDemo | Authenticated standard user with an empty cart; standard cart, checkout, and product-details tests reuse it |
+| Practice Test Automation | State after the successful demo login; this tutorial does not guarantee a durable authentication session |
+| TodoMVC | Anonymous empty-list baseline, separately for Chromium and Firefox |
+| UI Testing Playground | Anonymous homepage baseline, separately for Chromium and Firefox |
+| Demo Web Shop | Anonymous homepage baseline; no registered account is configured |
+
+Login, invalid-credential, locked-user, and alternative-user scenarios import [anonymous.ts](ui/support/fixtures/anonymous.ts) to override project state with empty cookies and origins. Tests still have isolated browser contexts: cart/local-storage changes are not saved back to the baseline. Authenticated tests must navigate to their protected page; loading storage state does not navigate automatically. Cookies, localStorage, and IndexedDB are captured; sessionStorage is not.
+
+OrangeHRM accepts `ORANGE_HRM_USERNAME` and `ORANGE_HRM_PASSWORD` from the process environment, defaulting to the existing public demo account. Private credentials must come from environment/CI secrets. Setup recording is disabled to avoid capturing login credentials. State files contain sensitive session data: do not commit or attach them to reports; delete them when no longer needed.
+
+Normal project commands run setup automatically. In Playwright UI mode, explicitly enable/run the matching setup project before dependent tests. Avoid `--no-deps` unless a current state file already exists. Do not run concurrent invocations sharing the same state/report directories.
+
+```powershell
+# Regenerate every UI baseline without running application scenarios
+npx playwright test --config=playwright.config.ts --project='*-setup'
+
+# Offline storage configuration and anonymous-fixture regressions
+npx playwright test --config=api\config\framework.playwright.config.ts storage-state.spec.ts
+```
+
 ### Multiple API hosts
 
 Booking and FakeRest service fixtures automatically select separate hosts, including when both suites run in parallel. Configure each target in the ignored root `.env` file or CI environment:

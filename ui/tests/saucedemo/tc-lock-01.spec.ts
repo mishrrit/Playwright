@@ -1,4 +1,4 @@
-import { test, expect } from "../../support/fixtures/base";
+import { test, expect } from "../../support/fixtures/anonymous";
 import { LoginPage } from "../../pages/saucedemo/LoginPage";
 import { usersByKey } from "../../test-data/saucedemo/users";
 

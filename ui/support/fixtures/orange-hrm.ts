@@ -1,4 +1,5 @@
 import { test as baseTest, expect } from "@playwright/test";
+import { orangeHrmCredentials } from "../storage-state/prepare";
 
 export type LoginFixture = {
   login: {
@@ -9,15 +10,9 @@ export type LoginFixture = {
 
 export const test = baseTest.extend<LoginFixture>({
   login: async ({ page }, use) => {
-    const credentials = {
-      username: "Admin",
-      password: "admin123",
-    };
+    const credentials = orangeHrmCredentials();
 
-    await page.goto("/");
-    await page.getByPlaceholder("Username").fill(credentials.username);
-    await page.getByPlaceholder("Password").fill(credentials.password);
-    await page.getByRole("button", { name: "Login" }).click();
+    await page.goto("/web/index.php/dashboard/index");
     await expect(page.getByRole("link", { name: "PIM" })).toBeVisible();
 
     await use(credentials);

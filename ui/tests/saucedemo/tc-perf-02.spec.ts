@@ -1,6 +1,7 @@
-import { test, expect } from "../../support/fixtures/base";
-import { LoginPage } from "../../pages/saucedemo/login.page";
-import { ProductsPage } from "../../pages/saucedemo/products.page";
+import { test, expect } from "../../support/fixtures/anonymous";
+import { LoginPage } from "../../pages/saucedemo/LoginPage";
+import { ProductsPage } from "../../pages/saucedemo/ProductsPage";
+import { CartPage } from "../../pages/saucedemo/CartPage";
 import { usersByKey as users } from "../../test-data/saucedemo/users";
 
 test("TC-PERF-02: Add to cart and navigate pages -> record response times", async ({
@@ -18,10 +19,9 @@ test("TC-PERF-02: Add to cart and navigate pages -> record response times", asyn
     .info()
     .annotations.push({ type: "timing", description: `${loadTime}ms` });
   expect(loadTime).toBeLessThan(10000);
-  await products.addByName(
-    await page.locator(products.productNames).nth(0).innerText(),
-  );
-  await page.click(".shopping_cart_link");
-  await expect(page.locator(".title")).toHaveText("Your Cart");
-  await expect(page.locator(".cart_item")).toBeVisible();
+  await products.addByName(await products.productNameAt(0).innerText());
+  const cart = new CartPage(page);
+  await cart.gotoCart();
+  await expect(cart.title).toHaveText("Your Cart");
+  await expect(cart.items).toBeVisible();
 });

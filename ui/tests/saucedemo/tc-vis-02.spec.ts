@@ -1,5 +1,6 @@
-import { test, expect } from "../../support/fixtures/base";
-import { LoginPage } from "../../pages/saucedemo/login.page";
+import { test, expect } from "../../support/fixtures/anonymous";
+import { LoginPage } from "../../pages/saucedemo/LoginPage";
+import { ProductsPage } from "../../pages/saucedemo/ProductsPage";
 import { usersByKey } from "../../test-data/saucedemo/users";
 
 const visual = usersByKey.visual;
@@ -9,7 +10,8 @@ test("TC-VIS-02: Product cards layout snapshot", async ({ page }) => {
   await login.goto();
   if (!visual) throw new Error("Visual user not found");
   await login.login(visual.username, visual.password);
-  await expect(page.locator(".inventory_list")).toBeVisible();
+  const products = new ProductsPage(page);
+  await expect(products.inventoryList).toBeVisible();
   // capture a screenshot for visual comparison (baseline not managed here)
   const shot = await page.screenshot({ fullPage: false });
   test.info().attachments.push({

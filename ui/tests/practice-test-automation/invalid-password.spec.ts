@@ -1,4 +1,4 @@
-import { test, expect } from "../../support/fixtures/base";
+import { test, expect } from "../../support/fixtures/anonymous";
 import { LoginPage } from "../../pages/practice-test-automation/LoginPage";
 import loginData from "../../test-data/practice-test-automation/login.json";
 

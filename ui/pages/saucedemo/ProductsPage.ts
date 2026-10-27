@@ -7,27 +7,45 @@ export class ProductsPage extends BasePage {
   readonly inventoryList: Locator;
   readonly productNames = ".inventory_item_name";
   readonly cartBadge = ".shopping_cart_badge";
+  readonly items: Locator;
+  readonly cartLink: Locator;
+  readonly inventoryButtons: Locator;
 
   constructor(page: Page) {
     super(page);
     this.title = page.locator(".title");
     this.inventoryList = page.locator(this.inventory);
+    this.items = page.locator(".inventory_item");
+    this.cartLink = page.locator(".shopping_cart_link");
+    this.inventoryButtons = this.items.locator(".btn_inventory");
+  }
+
+  productNameAt(index: number): Locator {
+    return this.items.nth(index).locator(this.productNames);
+  }
+
+  productPriceAt(index: number): Locator {
+    return this.items.nth(index).locator(".inventory_item_price");
+  }
+
+  async addFirstProductToCart(): Promise<void> {
+    await this.inventoryButtons.first().click();
   }
 
   async isLoaded(): Promise<boolean> {
-    return this.inventoryList.isVisible();
+    return this.isVisible();
   }
 
   async getTitleText(): Promise<string> {
     return (await this.title.innerText()).trim();
   }
 
-  async addToCartByName(name: string) {
-    const product = this.page
-      .locator(".inventory_item")
-      .filter({ hasText: name })
-      .first();
-    await product.locator("button").click();
+  private productByName(name: string): Locator {
+    return this.items.filter({ hasText: name }).first();
+  }
+
+  async addToCartByName(name: string): Promise<void> {
+    await this.productByName(name).locator("button").click();
   }
 
   async getCartCount(): Promise<number> {
@@ -50,11 +68,7 @@ export class ProductsPage extends BasePage {
     return this.getCartCount();
   }
 
-  async openProductByName(name: string) {
-    const product = this.page
-      .locator(".inventory_item")
-      .filter({ hasText: name })
-      .first();
-    await product.locator("a").first().click();
+  async openProductByName(name: string): Promise<void> {
+    await this.productByName(name).locator("a").first().click();
   }
 }

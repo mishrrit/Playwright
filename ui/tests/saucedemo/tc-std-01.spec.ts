@@ -1,7 +1,8 @@
-import { test, expect } from "../../support/fixtures/base";
+import { test, expect } from "../../support/fixtures/anonymous";
 import { LoginPage } from "../../pages/saucedemo/LoginPage";
 import { ProductsPage } from "../../pages/saucedemo/ProductsPage";
 import { CartPage } from "../../pages/saucedemo/CartPage";
+import { CheckoutPage } from "../../pages/saucedemo/CheckoutPage";
 import { usersByKey } from "../../test-data/saucedemo/users";
 
 const standard = usersByKey.standard;
@@ -17,33 +18,25 @@ test("TC-STD-01: standard_user - login and checkout happy path", async ({
   await login.login(standard.username, standard.password);
 
   const products = new ProductsPage(page);
-  await expect(page.locator(".inventory_list")).toBeVisible();
+  await expect(products.inventoryList).toBeVisible();
   expect(await products.getTitleText()).toBe("Products");
 
   // Add first product
-  const firstName = await page
-    .locator(".inventory_item_name")
-    .first()
-    .innerText();
+  const firstName = await products.productNameAt(0).innerText();
   await products.addToCartByName(firstName);
   expect(await products.getCartCount()).toBe(1);
 
   // Verify cart contents and checkout
   const cart = new CartPage(page);
   await cart.gotoCart();
-  await expect(page.locator(".cart_item .inventory_item_name")).toHaveText(
-    firstName,
-  );
+  await expect(cart.productNames).toHaveText(firstName);
 
   await cart.proceedToCheckout();
-  // fill checkout info
-  await page.fill('[data-test="firstName"]', "Test");
-  await page.fill('[data-test="lastName"]', "User");
-  await page.fill('[data-test="postalCode"]', "12345");
-  await page.click('[data-test="continue"]');
-  await page.click('[data-test="finish"]');
+  const checkout = new CheckoutPage(page);
+  await checkout.fillInfo("Test", "User", "12345");
+  await checkout.finish();
 
-  await expect(page.locator(".complete-header")).toHaveText(
+  await expect(checkout.completionMessage).toHaveText(
     /thank you for your order/i,
   );
 });

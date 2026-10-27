@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { storageStateProjects } from "./ui/support/storage-state/projects";
 
 /**
  * Read environment variables from file.
@@ -56,7 +57,7 @@ export default defineConfig({
   },
 
   projects: [
-    {
+    ...storageStateProjects("todo-mvc", {
       name: "todo-mvc-chromium",
       testMatch: "**/ui/tests/todo-mvc/**/*.spec.ts",
       use: {
@@ -64,8 +65,8 @@ export default defineConfig({
         baseURL: "https://demo.playwright.dev/",
         viewport: { width: 1280, height: 720 },
       },
-    },
-    {
+    }),
+    ...storageStateProjects("todo-mvc", {
       name: "todo-mvc-firefox",
       testMatch: "**/ui/tests/todo-mvc/**/*.spec.ts",
       use: {
@@ -73,8 +74,8 @@ export default defineConfig({
         baseURL: "https://demo.playwright.dev/",
         viewport: { width: 1280, height: 720 },
       },
-    },
-    {
+    }),
+    ...storageStateProjects("ui-testing-playground", {
       name: "ui-testing-playground-chromium",
       testMatch: "**/ui/tests/ui-testing-playground/**/*.spec.ts",
       use: {
@@ -82,8 +83,8 @@ export default defineConfig({
         baseURL: "http://uitestingplayground.com/",
         viewport: { width: 1280, height: 720 },
       },
-    },
-    {
+    }),
+    ...storageStateProjects("ui-testing-playground", {
       name: "ui-testing-playground-firefox",
       testMatch: "**/ui/tests/ui-testing-playground/**/*.spec.ts",
       use: {
@@ -91,8 +92,8 @@ export default defineConfig({
         baseURL: "http://uitestingplayground.com/",
         viewport: { width: 1280, height: 720 },
       },
-    },
-    {
+    }),
+    ...storageStateProjects("orange-hrm", {
       name: "orange-hrm-chromium",
       testMatch: "**/ui/tests/orange-hrm/**/*.spec.js",
       use: {
@@ -101,8 +102,8 @@ export default defineConfig({
           "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
         viewport: { width: 1280, height: 720 },
       },
-    },
-    {
+    }),
+    ...storageStateProjects("practice-test-automation", {
       name: "practice-test-automation-chromium",
       testMatch: "**/ui/tests/practice-test-automation/**/*.spec.ts",
       use: {
@@ -110,8 +111,8 @@ export default defineConfig({
         baseURL: "https://practicetestautomation.com/practice-test-login/",
         viewport: { width: 1280, height: 720 },
       },
-    },
-    {
+    }),
+    ...storageStateProjects("saucedemo", {
       name: "saucedemo-chromium",
       testMatch: "**/ui/tests/saucedemo/**/*.spec.ts",
       use: {
@@ -119,8 +120,8 @@ export default defineConfig({
         baseURL: "https://www.saucedemo.com/",
         viewport: { width: 1280, height: 720 },
       },
-    },
-    {
+    }),
+    ...storageStateProjects("demo-web-shop", {
       name: "demo-web-shop-chromium",
       testMatch: "**/ui/tests/demo-web-shop/**/*.spec.ts",
       use: {
@@ -128,7 +129,7 @@ export default defineConfig({
         baseURL: "https://demowebshop.tricentis.com/",
         viewport: { width: 1280, height: 720 },
       },
-    },
+    }),
     {
       name: "api",
       testMatch: "**/api/**/*.spec.ts",

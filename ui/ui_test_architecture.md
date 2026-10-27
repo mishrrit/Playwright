@@ -24,7 +24,9 @@ ui/
 │   ├── fixtures/
 │   │   ├── base.ts                  Re-exports Playwright test, expect, Page
 │   │   ├── index.ts                 Re-exports test and expect from base
-│   │   └── orange-hrm.ts            Optional authenticated login fixture
+│   │   ├── anonymous.ts             Empty state for login/alternate-account tests
+│   │   └── orange-hrm.ts            Opens the restored authenticated dashboard
+│   ├── storage-state/              Per-app/browser setup dependencies and state capture
 │   ├── global-setup/                Run-level report/artifact cleanup
 │   └── global-teardown/             Allure report generation
 ├── test-data/                      Suite-specific JSON inputs/expected values
@@ -63,12 +65,27 @@ For another supported account, update `USER_KEYS` and the canonical JSON, then s
 
 [Offline data regressions](../api/tests/framework/saucedemo-data.spec.ts) verify account identity, keyed access, immutability, and invalid-input handling. The lowercase page-object compatibility modules remain unchanged; they are re-exports rather than duplicate page implementations.
 
+### SauceDemo locator ownership
+
+All SauceDemo selector definitions belong in [pages/saucedemo](./pages/saucedemo/), not in specs. Tests keep their assertions, expected values, and scenario ordering, using page-object `Locator` properties and actions:
+
+- [LoginPage](./pages/saucedemo/LoginPage.ts): login controls and `errorContainer`.
+- [ProductsPage](./pages/saucedemo/ProductsPage.ts): `inventoryList`, `items`, `cartLink`, and indexed `productNameAt()` / `productPriceAt()` locators.
+- [CartPage](./pages/saucedemo/CartPage.ts): cart title, items, product names, navigation, and checkout entry.
+- [ProductDetailsPage](./pages/saucedemo/ProductDetailsPage.ts): detail name, price, and back navigation.
+- [CheckoutPage](./pages/saucedemo/CheckoutPage.ts): checkout actions and `completionMessage`.
+
+Use these five canonical `*Page.ts` modules directly. The redundant `cart.page.ts`, `login.page.ts`, and `products.page.ts` re-export files have been removed; `checkout.page.ts` is now `CheckoutPage.ts`. Existing action aliases (`addByName`, `cartCount`, and `isLoaded`) remain supported and delegate to the same implementations.
+
+Specs may assert on these locators with Playwright's retrying `expect` and select `.first()` or `.nth()` from exposed collections. Do not build locators or use selector-based `page.click()` / `page.fill()` in specs. Existing selector-string compatibility properties remain in the page layer. [Offline locator-boundary regressions](../api/tests/framework/saucedemo-locators.spec.ts) check every SauceDemo spec for these direct selector APIs.
+
 ## Inheritance, imports, and composition
 
 ```mermaid
 classDiagram
     SharedBasePage <|-- SauceDemoLoginPage
     SharedBasePage <|-- ProductsPage
+    SharedBasePage <|-- ProductDetailsPage
     SharedBasePage <|-- CartPage
     SharedBasePage <|-- CheckoutPage
     SharedBasePage <|-- PracticeLoginPage
@@ -110,7 +127,8 @@ flowchart TD
     Page -->|injected browser tab| POM
     POM -->|locator actions and navigation| App[Application under test]
     Specs -->|web-first assertions| App
-    Auth[support/fixtures/orange-hrm.ts] -->|login only when requested| Specs
+    Setup[support/storage-state/storage.setup.ts] -->|per-project baseline| Page
+    Auth[support/fixtures/orange-hrm.ts] -->|open authenticated dashboard when requested| Specs
     Runner -->|run hooks| Hooks[global setup and teardown]
 ```
 
@@ -143,7 +161,7 @@ sequenceDiagram
 
 1. The selected project in [playwright.config.ts](../playwright.config.ts) determines `testMatch`, browser/device, viewport, and `baseURL`.
 2. Root [global setup](../playwright-global-setup.ts) validates test plans and directly invokes the UI setup. The UI setup calls [shared cleanup](../scripts/clean-ai.js) once to archive previous Allure results and reset AI artifacts. Playwright owns cleanup of each project's configured test output directory. Even filtered standard runs invoke setup; cleanup failures stop execution.
-3. A spec imports `test`/`expect` from [base.ts](./support/fixtures/base.ts), a page class, and any JSON test data.
+3. The selected UI project's storage-state dependency prepares its baseline. A spec imports `test`/`expect` from [base.ts](./support/fixtures/base.ts) or an application/anonymous fixture, a page class, and any JSON test data.
 4. Playwright provides a fresh test-scoped browser context and page. The browser itself is normally worker-scoped and reused.
 5. The test constructs its page object. Constructing locators does not navigate or log in; the test must call the corresponding method.
 6. The page method performs interactions. Locator actions auto-wait for relevant actionability checks; they do not prove a business outcome by themselves.
@@ -153,13 +171,16 @@ sequenceDiagram
 
 ### Authentication and fixture lifecycle
 
-[orange-hrm.ts](./support/fixtures/orange-hrm.ts) extends Playwright with a `login` fixture. It navigates, fills the demo credentials, submits, checks that PIM is visible, then calls `await use(credentials)`.
+[Storage-state project definitions](./support/storage-state/projects.ts) pair every UI browser project with a setup dependency. [Storage setup](./support/storage-state/storage.setup.ts) starts anonymous, removes any previous baseline, prepares the application, and saves cookies, localStorage, and IndexedDB to an ignored per-project file. Setup failure blocks dependent tests. API projects remain independent.
 
-- A test must import this extended `test` and request `{ page, login }` to trigger it. Importing the file alone does not log in.
-- `await use(value)` hands the value to the dependent test; code after it runs during teardown. Setup occurs only for fixtures actually requested or their dependencies, unless explicitly marked automatic.
-- This fixture logs in on the same test-scoped page and does not configure shared storage state. Unrelated tests do not inherit its cookies.
-- Its current credentials are public-demo values in the implementation; this is not the template for private environments. New authentication fixtures should require environment secrets without fallback credentials.
-- Do not reuse authenticated setup in login-negative tests: those scenarios must start unauthenticated.
+- OrangeHRM and SauceDemo standard workflows reuse authenticated state. Practice Test Automation saves the successful-login demo state, but its existing scenarios all test login and therefore opt out. TodoMVC, UI Testing Playground, and Demo Web Shop save anonymous baselines.
+- [orange-hrm.ts](./support/fixtures/orange-hrm.ts) retains the `login` fixture API: requesting `{ page, login }` opens the dashboard using restored cookies, checks PIM visibility, and yields credentials. It no longer submits the login form per test.
+- Each test receives its own context initialized from the baseline. Mutations are not written back, browsers/apps have separate files, and sessionStorage is not captured.
+- [anonymous.ts](./support/fixtures/anonymous.ts) supplies empty state for login validation and alternate-account tests, preventing the project's standard-user session from leaking into them.
+- OrangeHRM credentials accept process environment overrides, with existing public-demo defaults. Private environments must use environment/CI secrets. Setup disables trace, screenshots, and video; state files must stay ignored and out of reports.
+- Run setup explicitly in UI mode before dependent tests; normal project commands run dependencies automatically. Avoid concurrent runs sharing state paths.
+
+See [storage-state commands and application policy](../README.md#web-application-storage-state).
 
 ## Scaling the UI framework
 
@@ -179,7 +200,7 @@ sequenceDiagram
 This example belongs under `ui/tests/practice-test-automation/` and uses the existing page class and data. Add the metadata header described below to new specs.
 
 ```typescript
-import { test, expect } from "../../support/fixtures/base";
+import { test, expect } from "../../support/fixtures/anonymous";
 import { LoginPage } from "../../pages/practice-test-automation/LoginPage";
 import loginData from "../../test-data/practice-test-automation/login.json";
 
